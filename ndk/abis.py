@@ -31,6 +31,7 @@ LP32_ABIS = (
 LP64_ABIS = (
     Abi('arm64-v8a'),
     Abi('x86_64'),
+    Abi('loongarch64'),
 )
 
 
@@ -42,6 +43,7 @@ ALL_ARCHITECTURES = (
     Arch('arm64'),
     Arch('x86'),
     Arch('x86_64'),
+    Arch('loongarch64'),
 )
 
 
@@ -50,6 +52,7 @@ ALL_TOOLCHAINS = (
     Toolchain('aarch64-linux-android'),
     Toolchain('x86'),
     Toolchain('x86_64'),
+    Toolchain('loongarch64-linux-android'),
 )
 
 
@@ -58,6 +61,7 @@ ALL_TRIPLES = (
     'aarch64-linux-android',
     'i686-linux-android',
     'x86_64-linux-android',
+    'loongarch64-linux-android',
 )
 
 
@@ -83,6 +87,7 @@ def arch_to_abis(arch: Arch) -> List[Abi]:
         Arch('arm64'): [Abi('arm64-v8a')],
         Arch('x86'): [Abi('x86')],
         Arch('x86_64'): [Abi('x86_64')],
+        Arch('loongarch64'): [Abi('loongarch64')],
     }[arch]
 
 
@@ -93,6 +98,7 @@ def abi_to_arch(abi: Abi) -> Arch:
         Abi('arm64-v8a'): Arch('arm64'),
         Abi('x86'): Arch('x86'),
         Abi('x86_64'): Arch('x86_64'),
+        Abi('loongarch64'): Arch('loongarch64'),
     }[abi]
 
 
