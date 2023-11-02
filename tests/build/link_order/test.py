@@ -74,6 +74,7 @@ def builtins_basename(abi: Abi) -> str:
         'arm64-v8a': 'aarch64',
         'x86': 'i686',
         'x86_64': 'x86_64',
+        'loongarch64': 'loongarch64',
     }[abi]
     return 'libclang_rt.builtins-' + runtimes_arch + '-android.a'
 

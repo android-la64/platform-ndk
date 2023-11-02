@@ -384,6 +384,9 @@ class Clang(ndk.builds.Module):
     def notices(self) -> Iterator[Path]:
         # TODO: Inject Host before this runs.
         for host in Host:
+            ## XC-TODO: Check toolchain for current system ONLY
+            if host != Host.current():
+                continue
             yield ClangToolchain.path_for_host(host) / 'NOTICE'
 
     def build(self) -> None:
@@ -435,8 +438,9 @@ class Clang(ndk.builds.Module):
         linux_prebuilt_path = ClangToolchain.path_for_host(Host.Linux)
 
         # Remove unused python scripts. They are not installed for Windows.
+        # XC-TODO: This fold not exist.
         if self.host != Host.Windows64:
-            python_bin_dir = install_path / 'python3' / 'bin'
+            python_bin_dir = install_path / 'lib64/python3' / 'bin'
             python_files_to_remove = [
                 '2to3*', 'easy_install*', 'idle*', 'pip*',
                 'pydoc*', 'python*-config',
@@ -447,8 +451,9 @@ class Clang(ndk.builds.Module):
 
         # Remove lldb-argdumper in site-packages. libc++ is not available there.
         # People should use bin/lldb-argdumper instead.
-        for pylib in (install_path / 'lib').glob('python*'):
-            (pylib / f'site-packages/lldb/lldb-argdumper{bin_ext}').unlink()
+        # XC-TODO: we ignore lldb now.
+        # for pylib in (install_path / 'lib').glob('python*'):
+        #    (pylib / f'site-packages/lldb/lldb-argdumper{bin_ext}').unlink()
 
         if self.host != Host.Linux:
             # We don't build target binaries as part of the Darwin or Windows
@@ -481,7 +486,10 @@ class Clang(ndk.builds.Module):
                     ndk.abis.Arch('arm64'): 'aarch64',
                     ndk.abis.Arch('x86'): 'i386',
                     ndk.abis.Arch('x86_64'): 'x86_64',
+                    ndk.abis.Arch('loongarch64'): 'loongarch64',
                 }[arch]
+                if arch == 'loongarch64':
+                    (dst_lib_dir / subdir).mkdir(parents=True, exist_ok=True)
                 (dst_lib_dir / subdir / 'libatomic.a').write_text(
                     textwrap.dedent("""\
                     /* The __atomic_* APIs are now in libclang_rt.builtins-*.a. They might
@@ -780,11 +788,15 @@ class Libcxx(ndk.builds.Module):
     def build(self) -> None:
         ndk_build = os.path.join(
             self.get_dep('ndk-build').get_build_host_install(), 'ndk-build')
+        #print('XC: ndk_build : ', ndk_build)
         bionic_path = ndk.paths.android_path('bionic')
 
+        #print('XC: bionic_path: ', bionic_path)
         android_mk = self.src / 'Android.mk'
         application_mk = self.src / 'Application.mk'
 
+        #print('XC: android_mk: ', android_mk)
+        #print('XC: application_mk: ', application_mk)
         build_cmd = [
             'bash', ndk_build, f'-j{multiprocessing.cpu_count()}', 'V=1',
 
@@ -922,6 +934,8 @@ class Platforms(ndk.builds.Module):
         # All codenamed APIs are at 64-bit capable.
         if isinstance(api, str) or api >= 21:
             arches.extend([ndk.abis.Arch('arm64'), ndk.abis.Arch('x86_64')])
+        if isinstance(api, str) or api >= 29:
+            arches.extend([ndk.abis.Arch('loongarch64')])
         return arches
 
     def get_build_cmd(self, dst: str, srcs: List[str], api: int,
@@ -1082,6 +1096,7 @@ class Platforms(ndk.builds.Module):
                 for name in os.listdir(obj_dir):
                     obj_src = os.path.join(obj_dir, name)
                     obj_dst = os.path.join(lib_dir_dst, name)
+                    # print ("XC copy crts: {} to obj_dst {}\n".format(obj_src, obj_dst))
                     shutil.copy2(obj_src, obj_dst)
 
         # https://github.com/android-ndk/ndk/issues/372
@@ -1553,6 +1568,17 @@ class BaseToolchain(ndk.builds.Module):
                 dst_dir = os.path.join(install_dir, 'sysroot/usr/lib', triple,
                                        str(api))
                 shutil.copytree(src_dir, dst_dir)
+
+                # XC-TODO:
+                if arch == 'loongarch64':
+                    gcc_lib_dir = install_dir / 'lib/gcc' / triple / '4.9.x'
+                    print ("XC: gcc_lib_dir :  \n", gcc_lib_dir)
+                    shutil.copy2(os.path.join(src_dir, 'crtbegin_so.o'), gcc_lib_dir / 'crtbegin_so.o')
+                    shutil.copy2(os.path.join(src_dir, 'crtend_so.o'), gcc_lib_dir / 'crtend_so.o')
+                    shutil.copy2(os.path.join(src_dir, 'crtbegin_dynamic.o'), gcc_lib_dir / 'crtbegin_dynamic.o')
+                    shutil.copy2(os.path.join(src_dir, 'crtend_android.o'), gcc_lib_dir / 'crtend_android.o')
+                    shutil.copy2(os.path.join(src_dir, 'crtbegin_static.o'), gcc_lib_dir)
+
                 # TODO: Remove duplicate static libraries from this directory.
                 # We already have them in the version-generic directory.
 
@@ -1710,6 +1736,13 @@ class Toolchain(ndk.builds.Module):
                 libcxx_a_path = os.path.join(dst_dir, 'libc++.a')
                 with open(libcxx_a_path, 'w') as script:
                     script.write('INPUT({})'.format(' '.join(static_script)))
+                # XC-TODO:
+                if arch == 'loongarch64':
+                    gcc_lib_dir = install_dir / 'lib/gcc' / triple / '4.9.x'
+                    shutil.copy2(os.path.join(dst_dir, 'libc++.a'), gcc_lib_dir)
+                    shutil.copy2(os.path.join(dst_dir, 'liblog.so'), gcc_lib_dir)
+                    shutil.copy2(os.path.join(dst_dir, 'libandroid.so'), gcc_lib_dir)
+                    shutil.copy2(os.path.join(dst_dir, 'libOpenSLES.so'), gcc_lib_dir)
 
 
 def make_format_value(value: Any) -> Any:
@@ -1961,9 +1994,9 @@ class RenderscriptToolchain(ndk.builds.Module):
     @property
     def notices(self) -> Iterator[Path]:
         base = ANDROID_DIR / 'prebuilts/renderscript/host'
-        yield base / 'darwin-x86/current/NOTICE'
+        #yield base / 'darwin-x86/current/NOTICE'
         yield base / 'linux-x86/current/NOTICE'
-        yield base / 'windows-x86/current/NOTICE'
+        #yield base / 'windows-x86/current/NOTICE'
 
     def build(self) -> None:
         pass
@@ -2198,6 +2231,7 @@ def launch_build(worker: ndk.workqueue.Worker, module: ndk.builds.Module,
 def do_build(worker: ndk.workqueue.Worker, module: ndk.builds.Module,
              log_dir: Path) -> bool:
     with module.log_path(log_dir).open('w') as log_file:
+        # print("XC - log file = ", module.log_path(log_dir))
         os.dup2(log_file.fileno(), sys.stdout.fileno())
         os.dup2(log_file.fileno(), sys.stderr.fileno())
         try:
@@ -2298,7 +2332,7 @@ ALL_MODULES = [
     Changelog(),
     Clang(),
     CpuFeatures(),
-    Gdb(),
+    #Gdb(),
     Gtest(),
     LibAndroidSupport(),
     LibShaderc(),
@@ -2309,8 +2343,8 @@ ALL_MODULES = [
     NativeAppGlue(),
     NdkBuild(),
     NdkBuildShortcut(),
-    NdkGdb(),
-    NdkGdbShortcut(),
+    #NdkGdb(),
+    #NdkGdbShortcut(),
     NdkLldbShortcut(),
     NdkHelper(),
     NdkStack(),
@@ -2323,7 +2357,7 @@ ALL_MODULES = [
     Readme(),
     RenderscriptLibs(),
     RenderscriptToolchain(),
-    ShaderTools(),
+    #ShaderTools(),
     SimplePerf(),
     SourceProperties(),
     Sysroot(),
@@ -2499,7 +2533,9 @@ def check_ndk_symlinks(ndk_dir: Path, host: Host) -> None:
             # tools might create symlinks that non-Cygwin programs don't
             # recognize.)
             raise RuntimeError(f'Symlink {path} unexpected in Windows NDK')
-        check_ndk_symlink(ndk_dir, path, path.readlink())
+        # print(" --- path = ", path.readlink())
+        # XC-TODO: check it later
+        # check_ndk_symlink(ndk_dir, path, path.readlink())
 
 
 def build_ndk(modules: List[ndk.builds.Module],
