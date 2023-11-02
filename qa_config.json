@@ -1,5 +1,8 @@
 {
   "devices": {
+    "17": [
+      "armeabi-v7a"
+    ],
     "29": [
       "armeabi-v7a",
       "arm64-v8a",

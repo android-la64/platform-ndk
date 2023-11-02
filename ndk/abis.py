@@ -139,6 +139,6 @@ def min_api_for_abi(abi: Abi) -> int:
     if abi in LP64_ABIS:
         return 29
     elif abi in LP32_ABIS:
-        return 16
+        return 17
     else:
         raise ValueError('Invalid ABI: {}'.format(abi))
