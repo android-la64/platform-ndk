@@ -50,6 +50,15 @@ function(adjust_api_level api_level result_name)
     set(result 21)
   endif()
 
+  # adjust api_level to 29 for loongarch64
+  if(ANDROID_ABI STREQUAL "loongarch64" AND result LESS 29)
+    message(STATUS
+      "android-${result} is not supported for ${ANDROID_ABI}. Using minimum "
+      "supported loongarch64 version 29.")
+    set(api_level android-29)
+    set(result 29)
+  endif()
+
   # ANDROID_PLATFORM beyond the maximum is an error. The correct way to specify
   # the latest version is ANDROID_PLATFORM=latest.
   if(result GREATER NDK_MAX_PLATFORM_LEVEL)

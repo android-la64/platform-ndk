@@ -1204,6 +1204,7 @@ NDK_APP_VARS_OPTIONAL += \
     APP_WRAP_SH_arm64-v8a \
     APP_WRAP_SH_x86 \
     APP_WRAP_SH_x86_64 \
+    APP_WRAP_SH_loongarch64 \
 
 # the list of all variables that may appear in an Application.mk file
 # or defined by the build scripts.

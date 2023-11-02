@@ -36,6 +36,13 @@ ifneq ($(filter $(NDK_KNOWN_DEVICE_ABI64S),$(TARGET_ARCH_ABI)),)
     endif
 endif
 
+# riscv64 requires API 29
+ifeq "$(TARGET_ARCH_ABI)" "loongarch64"
+    ifneq ($(call lt,$(TARGET_PLATFORM_LEVEL),29),)
+        TARGET_PLATFORM_LEVEL := 29
+    endif
+endif
+
 # Not used by ndk-build, but are documented for use by Android.mk files.
 TARGET_PLATFORM := android-$(TARGET_PLATFORM_LEVEL)
 TARGET_ABI := $(TARGET_PLATFORM)-$(TARGET_ARCH_ABI)
