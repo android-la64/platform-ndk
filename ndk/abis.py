@@ -137,7 +137,7 @@ def min_api_for_abi(abi: Abi) -> int:
     ValueError: Invalid ABI: foobar
     """
     if abi in LP64_ABIS:
-        return 21
+        return 29
     elif abi in LP32_ABIS:
         return 16
     else:
