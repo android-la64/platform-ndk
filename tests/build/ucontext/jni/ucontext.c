@@ -17,5 +17,6 @@
 
 int main()
 {
-    struct ucontext u;
+    // struct ucontext u;
+	ucontext_t u;
 }

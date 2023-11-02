@@ -19,7 +19,7 @@ int main()
 #include <xmmintrin.h>
 #define SP  "esp"
 typedef __m128 float32x4_t;
-#elif defined(__mips__)  // mipsel64- defines __mips__ too
+#elif defined(__mips__) || defined(__loongarch__)  // mipsel64- defines __mips__ too
 #define SP  "sp"
 typedef float float32x4_t __attribute__ ((__vector_size__ (16)));
 #else
