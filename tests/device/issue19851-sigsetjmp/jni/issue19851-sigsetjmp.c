@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <setjmp.h>
+#include <unistd.h>
 
 static sigjmp_buf sbuf;
 

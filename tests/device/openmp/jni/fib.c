@@ -3,6 +3,7 @@
 #include <math.h>
 #include <omp.h>
 #include <unistd.h>
+#include <sys/time.h>
 #define MAX 33 //41
 int Fibonacci(int n)
 {   int x, y;

@@ -108,6 +108,8 @@ def make_clang_scripts(install_dir, arch, api, windows):
     """
     with open(os.path.join(install_dir, 'AndroidVersion.txt')) as version_file:
         major, minor, _build = version_file.read().strip().split('.')
+        first_line = version_file.read().strip().splitlines()[0]
+        major, minor, _build = first_line.split(".")
 
     version_number = major + minor
 
