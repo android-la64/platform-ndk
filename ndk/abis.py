@@ -131,13 +131,18 @@ def min_api_for_abi(abi: Abi) -> int:
     >>> min_api_for_abi('armeabi-v7a')
     16
 
+    >>> min_api_for_abi('loongarch64')
+    29
+
     >>> min_api_for_abi('foobar')
     Traceback (most recent call last):
         ...
     ValueError: Invalid ABI: foobar
     """
-    if abi in LP64_ABIS:
+    if abi == 'loongarch64':
         return 29
+    elif abi in LP64_ABIS:
+        return 21
     elif abi in LP32_ABIS:
         return 17
     else:
