@@ -31,8 +31,8 @@ TARGET_PLATFORM_LEVEL := $(APP_PLATFORM_LEVEL)
 # 64-bit ABIs were first supported in API 21. Pull up these ABIs if the app has
 # a lower minSdkVersion.
 ifneq ($(filter $(NDK_KNOWN_DEVICE_ABI64S),$(TARGET_ARCH_ABI)),)
-    ifneq ($(call lt,$(TARGET_PLATFORM_LEVEL),21),)
-        TARGET_PLATFORM_LEVEL := 21
+    ifneq ($(call lt,$(TARGET_PLATFORM_LEVEL),29),)
+        TARGET_PLATFORM_LEVEL := 29
     endif
 endif
 
