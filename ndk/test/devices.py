@@ -48,6 +48,7 @@ def logger() -> logging.Logger:
 class DeviceConfig:
     abis: list[Abi]
     version: int
+    supports_mte: bool
 
     def can_run_build_config(self, config: BuildConfiguration) -> bool:
         assert config.api is not None
@@ -79,12 +80,13 @@ class Device(adb.AndroidDevice):
         self._ro_build_version_codename: Optional[str] = None
         self._ro_debuggable: Optional[str] = None
         self._ro_product_name: Optional[str] = None
+        self._supports_mte: bool = False
 
         if precache:
             self.cache_properties()
 
     def config(self) -> DeviceConfig:
-        return DeviceConfig(self.abis, self.version)
+        return DeviceConfig(self.abis, self.version, self.supports_mte)
 
     def cache_properties(self) -> None:
         """Caches the device's system properties."""
@@ -118,6 +120,9 @@ class Device(adb.AndroidDevice):
                 abis.difference_update({"arm64-v8a", "armeabi-v7a"})
 
             self._cached_abis = sorted(list(abis))
+            self._supports_mte = (
+                self.shell_nocheck(["grep", " mte", "/proc/cpuinfo"])[0] == 0
+            )
 
     @property
     def name(self) -> str:
@@ -169,6 +174,12 @@ class Device(adb.AndroidDevice):
     def supports_pie(self) -> bool:
         return self.version >= 16
 
+    @property
+    def supports_mte(self) -> bool:
+        self.cache_properties()
+        assert self._supports_mte is not None
+        return self._supports_mte
+
     def __str__(self) -> str:
         return f"android-{self.version} {self.name} {self.serial} {self.build_id}"
 
@@ -195,6 +206,7 @@ class DeviceShardingGroup(ShardingGroup[Device]):
         is_emulator: bool,
         is_release: bool,
         is_debuggable: bool,
+        supports_mte: bool,
     ) -> None:
         self.devices = devices
         self.abis = abis
@@ -202,6 +214,7 @@ class DeviceShardingGroup(ShardingGroup[Device]):
         self.is_emulator = is_emulator
         self.is_release = is_release
         self.is_debuggable = is_debuggable
+        self.supports_mte = supports_mte
 
     @classmethod
     def with_first_device(cls, first_device: Device) -> DeviceShardingGroup:
@@ -212,6 +225,7 @@ class DeviceShardingGroup(ShardingGroup[Device]):
             first_device.is_emulator,
             first_device.is_release,
             first_device.is_debuggable,
+            first_device.supports_mte,
         )
 
     def __str__(self) -> str:
@@ -238,6 +252,8 @@ class DeviceShardingGroup(ShardingGroup[Device]):
             return False
         if self.is_debuggable != device.is_debuggable:
             return False
+        if self.supports_mte != device.supports_mte:
+            return False
         return True
 
     def __eq__(self, other: object) -> bool:
@@ -251,6 +267,8 @@ class DeviceShardingGroup(ShardingGroup[Device]):
         if self.is_release != other.is_release:
             return False
         if self.is_debuggable != other.is_debuggable:
+            return False
+        if self.supports_mte != other.supports_mte:
             return False
         if self.devices != other.devices:
             print("devices not equal: {}, {}".format(self.devices, other.devices))
@@ -266,6 +284,7 @@ class DeviceShardingGroup(ShardingGroup[Device]):
                 self.is_debuggable,
                 tuple(self.abis),
                 tuple(self.devices),
+                self.supports_mte,
             )
         )
 
@@ -330,6 +349,12 @@ class DeviceFleet:
                     abi
                 ] = DeviceShardingGroup.with_first_device(device)
 
+            # If we have a device that supports MTE, prefer that.
+            if not current_group.supports_mte and device.supports_mte:
+                self.devices[device.version][
+                    abi
+                ] = DeviceShardingGroup.with_first_device(device)
+
     def get_unique_device_groups(self) -> Set[DeviceShardingGroup]:
         groups = set()
         for version in self.get_versions():
@@ -361,6 +386,7 @@ class DeviceFleet:
                             is_emulator=False,
                             is_release=True,
                             is_debuggable=False,
+                            supports_mte=False,
                         )
                     )
         return missing

@@ -292,7 +292,7 @@ def report_skipped_tests_for_missing_devices(
     test_cases: Iterable[TestCase],
 ) -> None:
     for group in fleet.get_missing():
-        device_config = DeviceConfig(group.abis, group.version)
+        device_config = DeviceConfig(group.abis, group.version, group.supports_mte)
         if not device_config.can_run_build_config(build_config):
             # These are a configuration that will never be valid, like a minSdkVersion
             # 30 test on an API 21 device. No need to report these.

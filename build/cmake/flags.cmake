@@ -41,6 +41,15 @@ if("hwaddress" IN_LIST ANDROID_SANITIZE)
   string(APPEND _ANDROID_NDK_INIT_LDFLAGS " -fsanitize=hwaddress")
 endif()
 
+if("memtag" IN_LIST ANDROID_SANITIZE)
+  string(APPEND _ANDROID_NDK_INIT_CFLAGS " -fsanitize=memtag-stack -fno-omit-frame-pointer")
+  string(APPEND _ANDROID_NDK_INIT_LDFLAGS " -fsanitize=memtag-stack,memtag-heap -fsanitize-memtag-mode=sync")
+  if(CMAKE_ANDROID_ARCH_ABI STREQUAL "arm64-v8a")
+    string(APPEND _ANDROID_NDK_INIT_CFLAGS " -march=armv8-a+memtag")
+    string(APPEND _ANDROID_NDK_INIT_LDFLAGS " -march=armv8-a+memtag")
+  endif()
+endif()
+
 string(APPEND _ANDROID_NDK_INIT_CFLAGS_DEBUG " -fno-limit-debug-info")
 
 # If we're using LLD we need to use a slower build-id algorithm to work around

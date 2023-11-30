@@ -313,7 +313,8 @@ class TestBuilder:
                 for device_version, abis in self.test_spec.devices.items():
                     if config.abi not in abis:
                         continue
-                    device_config = DeviceConfig([config.abi], device_version)
+                    # Pretend device doesn't support MTE which is the safer bet.
+                    device_config = DeviceConfig([config.abi], device_version, False)
                     if test.check_unsupported(device_config) is not None:
                         unsupported.append(device_version)
                     else:
