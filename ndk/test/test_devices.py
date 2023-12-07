@@ -25,10 +25,11 @@ from ndk.test.spec import BuildConfiguration, CMakeToolchainFile, WeakSymbolsCon
 
 
 class MockDevice(ndk.test.devices.Device):
-    def __init__(self, version: int, abis: List[Abi]) -> None:
+    def __init__(self, version: int, abis: List[Abi], supports_mte: bool) -> None:
         super().__init__("")
         self._version = version
         self._abis = abis
+        self._supports_mte = supports_mte
 
     @property
     def abis(self) -> List[Abi]:
@@ -37,6 +38,10 @@ class MockDevice(ndk.test.devices.Device):
     @property
     def version(self) -> int:
         return self._version
+
+    @property
+    def supports_mte(self) -> bool:
+        return self._supports_mte
 
 
 def make_test_build_configuration(abi: Abi, api: int) -> BuildConfiguration:
@@ -49,9 +54,9 @@ def make_test_build_configuration(abi: Abi, api: int) -> BuildConfiguration:
 
 class DeviceTest(unittest.TestCase):
     def test_can_run_build_config(self) -> None:
-        jb_arm = MockDevice(16, [Abi("armeabi-v7a")])
-        n_arm = MockDevice(25, [Abi("armeabi-v7a"), Abi("arm64-v8a")])
-        n_intel = MockDevice(25, [Abi("x86"), Abi("x86_64")])
+        jb_arm = MockDevice(16, [Abi("armeabi-v7a")], False)
+        n_arm = MockDevice(25, [Abi("armeabi-v7a"), Abi("arm64-v8a")], False)
+        n_intel = MockDevice(25, [Abi("x86"), Abi("x86_64")], False)
 
         jb_arm7 = make_test_build_configuration(Abi("armeabi-v7a"), 16)
         # Too old, no PIE support.

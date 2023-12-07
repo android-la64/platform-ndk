@@ -469,6 +469,15 @@ if("hwaddress" IN_LIST ANDROID_SANITIZE)
   list(APPEND ANDROID_LINKER_FLAGS -fsanitize=hwaddress)
 endif()
 
+if("memtag" IN_LIST ANDROID_SANITIZE)
+  list(APPEND ANDROID_COMPILER_FLAGS -fsanitize=memtag-stack -fno-omit-frame-pointer)
+  list(APPEND ANDROID_LINKER_FLAGS -fsanitize=memtag-stack,memtag-heap -fsanitize-memtag-mode=sync)
+  if(ANDROID_ABI STREQUAL arm64-v8a)
+    list(APPEND ANDROID_COMPILER_FLAGS -march=armv8-a+memtag)
+    list(APPEND ANDROID_LINKER_FLAGS -march=armv8-a+memtag)
+  endif()
+endif()
+
 # https://github.com/android/ndk/issues/885
 # If we're using LLD we need to use a slower build-id algorithm to work around
 # the old version of LLDB in Android Studio, which doesn't understand LLD's
