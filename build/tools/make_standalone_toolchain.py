@@ -16,8 +16,10 @@
 #
 """Creates a toolchain installation for a given Android target.
 
-The output of this tool is a more typical cross-compiling toolchain. It is
-indended to be used with existing build systems such as autotools.
+THIS TOOL IS OBSOLETE. It is no longer necessary to create a separate toolchain for use
+with build systems that lack explicit NDK support. The compiler installed to
+<NDK>/toolchains/llvm/prebuilt/<host>/bin can be used directly. See
+https://developer.android.com/ndk/guides/other_build_systems for more details.
 """
 import argparse
 import atexit
@@ -286,18 +288,21 @@ def warn_unnecessary(arch, api, host_tag):
     logger().warning(
         textwrap.dedent(
             """\
-        make_standalone_toolchain.py is no longer necessary. The
-        {toolchain_dir} directory contains target-specific scripts that perform
-        the same task. For example, instead of:
+            THIS TOOL IS OBSOLETE. The {toolchain_dir} directory contains
+            target-specific scripts that perform the same task. For example,
+            instead of:
 
-            {prompt}python {standalone_toolchain} \\
-                --arch {arch} --api {api} --install-dir toolchain
-            {prompt}{old_clang} src.cpp
+                {prompt}python {standalone_toolchain} \\
+                    --arch {arch} --api {api} --install-dir toolchain
+                {prompt}{old_clang} src.cpp
 
-        Instead use:
+            Instead use:
 
-            {prompt}{new_clang} src.cpp
-        """.format(
+                {prompt}{new_clang} src.cpp
+
+            See https://developer.android.com/ndk/guides/other_build_systems for more
+            details.
+            """.format(
                 toolchain_dir=toolchain_dir,
                 prompt=prompt,
                 standalone_toolchain=standalone_toolchain,
@@ -318,7 +323,15 @@ def get_min_supported_api_level():
 
 def parse_args():
     """Parse command line arguments from sys.argv."""
-    parser = argparse.ArgumentParser(description=inspect.getdoc(sys.modules[__name__]))
+    parser = argparse.ArgumentParser(
+        description=inspect.getdoc(sys.modules[__name__]),
+        # Even when there are invalid arguments, we want to emit the deprecation
+        # warning. We usually wait until after argument parsing to emit that warning so
+        # that we can use the --abi and --api inputs to provide a more complete
+        # replacement example, so to do that in the case of an argument error we need to
+        # catch the error rather than allow it to exit immediately.
+        exit_on_error=False,
+    )
 
     parser.add_argument(
         "--arch", required=True, choices=("arm", "arm64", "x86", "x86_64")
@@ -365,7 +378,11 @@ def parse_args():
 
 def main():
     """Program entry point."""
-    args = parse_args()
+    try:
+        args = parse_args()
+    except argparse.ArgumentError as ex:
+        warn_unnecessary("arm64", "21", get_host_tag_or_die())
+        sys.exit(ex)
 
     if args.verbose is None:
         logging.basicConfig(level=logging.WARNING)
