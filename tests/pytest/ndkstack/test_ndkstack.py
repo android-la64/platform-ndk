@@ -15,22 +15,13 @@
 # limitations under the License.
 #
 """Unittests for ndk-stack.py"""
-
-from __future__ import print_function
-
 import os.path
 import textwrap
 import unittest
+from io import StringIO
 from typing import Any
 from unittest import mock
 from unittest.mock import Mock, patch
-
-try:
-    # Python 2
-    from cStringIO import StringIO
-except ModuleNotFoundError:  # pylint:disable=undefined-variable
-    # Python 3
-    from io import StringIO
 
 import ndkstack
 
