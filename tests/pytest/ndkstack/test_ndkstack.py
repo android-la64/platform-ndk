@@ -368,7 +368,9 @@ class GetElfFileTests(unittest.TestCase):
         line = "  #03 pc 00002050  " + tail
         frame_info = ndkstack.FrameInfo.from_line(line)
         assert frame_info is not None
-        frame_info.verify_elf_file = mock.MagicMock()
+        # mypy can't (and won't) tolerate this.
+        # https://github.com/python/mypy/issues/2427
+        frame_info.verify_elf_file = mock.Mock()  # type: ignore
         return frame_info
 
     def test_file_only(self) -> None:
