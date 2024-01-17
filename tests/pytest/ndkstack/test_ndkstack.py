@@ -109,8 +109,11 @@ class PathTests(unittest.TestCase):
     def test_find_readelf_in_standalone_toolchain(self, mock_exists: Mock) -> None:
         mock_exists.reset_mock()
         expected_path = os.path.join("/ndk_fake", "bin", self.readelf)
-        mock_exists.side_effect = [False, True]
-        os.path.exists = lambda path, exp=expected_path: path == exp
+
+        def mock_exists_impl(path: str) -> bool:
+            return path == expected_path
+
+        mock_exists.side_effect = mock_exists_impl
         self.assertEqual(expected_path, ndkstack.find_readelf(*self.ndk_paths))
 
     def test_readelf_not_found(self, mock_exists: Mock) -> None:
