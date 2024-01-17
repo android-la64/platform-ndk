@@ -127,7 +127,7 @@ class FrameTests(unittest.TestCase):
     def test_line_with_map_name(self) -> None:
         line = "  #14 pc 00001000  /fake/libfake.so"
         frame_info = ndkstack.FrameInfo.from_line(line)
-        self.assertTrue(frame_info)
+        assert frame_info is not None
         self.assertEqual("#14", frame_info.num)
         self.assertEqual("00001000", frame_info.pc)
         self.assertEqual("/fake/libfake.so", frame_info.tail)
@@ -139,7 +139,7 @@ class FrameTests(unittest.TestCase):
     def test_line_with_function(self) -> None:
         line = "  #08 pc 00001040  /fake/libfake.so (func())"
         frame_info = ndkstack.FrameInfo.from_line(line)
-        self.assertTrue(frame_info)
+        assert frame_info is not None
         self.assertEqual("#08", frame_info.num)
         self.assertEqual("00001040", frame_info.pc)
         self.assertEqual("/fake/libfake.so (func())", frame_info.tail)
@@ -151,7 +151,7 @@ class FrameTests(unittest.TestCase):
     def test_line_with_offset(self) -> None:
         line = "  #04 pc 00002050  /fake/libfake.so (offset 0x2000)"
         frame_info = ndkstack.FrameInfo.from_line(line)
-        self.assertTrue(frame_info)
+        assert frame_info is not None
         self.assertEqual("#04", frame_info.num)
         self.assertEqual("00002050", frame_info.pc)
         self.assertEqual("/fake/libfake.so (offset 0x2000)", frame_info.tail)
@@ -163,7 +163,7 @@ class FrameTests(unittest.TestCase):
     def test_line_with_build_id(self) -> None:
         line = "  #03 pc 00002050  /fake/libfake.so (BuildId: d1d420a58366bf29f1312ec826f16564)"
         frame_info = ndkstack.FrameInfo.from_line(line)
-        self.assertTrue(frame_info)
+        assert frame_info is not None
         self.assertEqual("#03", frame_info.num)
         self.assertEqual("00002050", frame_info.pc)
         self.assertEqual(
@@ -178,7 +178,7 @@ class FrameTests(unittest.TestCase):
     def test_line_with_container_file(self) -> None:
         line = "  #10 pc 00003050  /fake/fake.apk!libc.so"
         frame_info = ndkstack.FrameInfo.from_line(line)
-        self.assertTrue(frame_info)
+        assert frame_info is not None
         self.assertEqual("#10", frame_info.num)
         self.assertEqual("00003050", frame_info.pc)
         self.assertEqual("/fake/fake.apk!libc.so", frame_info.tail)
@@ -190,7 +190,7 @@ class FrameTests(unittest.TestCase):
     def test_line_with_container_and_elf_equal(self) -> None:
         line = "  #12 pc 00004050  /fake/libc.so!lib/libc.so"
         frame_info = ndkstack.FrameInfo.from_line(line)
-        self.assertTrue(frame_info)
+        assert frame_info is not None
         self.assertEqual("#12", frame_info.num)
         self.assertEqual("00004050", frame_info.pc)
         self.assertEqual("/fake/libc.so!lib/libc.so", frame_info.tail)
@@ -205,7 +205,7 @@ class FrameTests(unittest.TestCase):
             "(offset 0x1000) (BuildId: 6a0c10d19d5bf39a5a78fa514371dab3)"
         )
         frame_info = ndkstack.FrameInfo.from_line(line)
-        self.assertTrue(frame_info)
+        assert frame_info is not None
         self.assertEqual("#07", frame_info.num)
         self.assertEqual("00823fc", frame_info.pc)
         self.assertEqual(
@@ -227,7 +227,7 @@ class VerifyElfFileTests(unittest.TestCase):
     def create_frame_info(self) -> ndkstack.FrameInfo:
         line = "  #03 pc 00002050  /fake/libfake.so"
         frame_info = ndkstack.FrameInfo.from_line(line)
-        self.assertTrue(frame_info)
+        assert frame_info is not None
         return frame_info
 
     def test_elf_file_does_not_exist(self, mock_exists: Mock, _: Mock) -> None:
@@ -321,6 +321,7 @@ class GetZipInfoFromOffsetTests(unittest.TestCase):
         self.assertFalse(ndkstack.get_zip_info_from_offset(self.mock_zip, 0x2000))
 
         zip_info = ndkstack.get_zip_info_from_offset(self.mock_zip, 0x200)
+        assert zip_info is not None
         self.assertEqual(0x100, zip_info.header_offset)
 
     @patch("os.stat")
@@ -336,12 +337,15 @@ class GetZipInfoFromOffsetTests(unittest.TestCase):
         self.assertFalse(ndkstack.get_zip_info_from_offset(self.mock_zip, 0x50))
 
         zip_info = ndkstack.get_zip_info_from_offset(self.mock_zip, 0x200)
+        assert zip_info is not None
         self.assertEqual(0x100, zip_info.header_offset)
 
         zip_info = ndkstack.get_zip_info_from_offset(self.mock_zip, 0x100)
+        assert zip_info is not None
         self.assertEqual(0x100, zip_info.header_offset)
 
         zip_info = ndkstack.get_zip_info_from_offset(self.mock_zip, 0x1000)
+        assert zip_info is not None
         self.assertEqual(0x1000, zip_info.header_offset)
 
 
@@ -363,7 +367,7 @@ class GetElfFileTests(unittest.TestCase):
     def create_frame_info(self, tail: str) -> Any:
         line = "  #03 pc 00002050  " + tail
         frame_info = ndkstack.FrameInfo.from_line(line)
-        self.assertTrue(frame_info)
+        assert frame_info is not None
         frame_info.verify_elf_file = mock.MagicMock()
         return frame_info
 
