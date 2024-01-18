@@ -192,7 +192,13 @@ class FrameInfo:
     # We're deliberately very loose because NDK users are likely to be
     # looking at crashes on ancient OS releases.
     # TODO: support asan stacks too?
-    _line_re = re.compile(r".* +(#[0-9]+) +pc ([0-9a-f]+) +(([^ ]+).*)")
+    #
+    # The PC will begin with 0x for some traces. That's not the norm, but we've had a
+    # report of traces with that format being provided by the Play console. Presumably
+    # either Play is rewriting those (though I can't imagine why they'd be doing that),
+    # or some OEM has altered the format of the crash output.
+    # See https://github.com/android/ndk/issues/1898.
+    _line_re = re.compile(r".* +(#[0-9]+) +pc (?:0x)?([0-9a-f]+) +(([^ ]+).*)")
     _sanitizer_line_re = re.compile(
         r".* +(#[0-9]+) +0x[0-9a-f]* +\(([^ ]+)\+0x([0-9a-f]+)\)"
     )

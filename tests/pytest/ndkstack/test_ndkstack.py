@@ -218,6 +218,15 @@ class FrameTests(unittest.TestCase):
         self.assertEqual("/fake/fake.apk", frame_info.container_file)
         self.assertEqual("6a0c10d19d5bf39a5a78fa514371dab3", frame_info.build_id)
 
+    def test_0x_prefixed_address(self) -> None:
+        """Tests that addresses beginning with 0x are parsed correctly."""
+        frame_info = ndkstack.FrameInfo.from_line(
+            "  #00  pc 0x000000000006263c  "
+            "/apex/com.android.runtime/lib/bionic/libc.so (abort+172)"
+        )
+        assert frame_info is not None
+        assert frame_info.pc == "000000000006263c"
+
 
 @patch.object(ndkstack, "get_build_id")
 @patch("os.path.exists")
