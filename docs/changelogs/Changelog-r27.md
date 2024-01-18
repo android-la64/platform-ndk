@@ -20,6 +20,9 @@ directly, see the [build system maintainers guide].
 * A RISC-V sysroot (AKA riscv64, or rv64) has been added. It is **not**
   supported. It is present to aid bringup for OS vendors, but it's not yet a
   supported Android ABI. It will not be built by default.
+* [Issue 1898]: ndk-stack now tolerates 0x prefixed addresses.
+
+[Issue 1898]: https://github.com/android/ndk/issues/1898
 
 ## Known Issues
 
