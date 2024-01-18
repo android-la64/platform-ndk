@@ -97,12 +97,6 @@ def run_test(
     extra_args: list[str],
     flags: list[str],
 ) -> tuple[bool, str]:
-    # Skip the test if the target ABI is 'riscv64'. The standalone toolchain
-    # is not required and users that adapt their build to support 'riscv64'
-    # should migrate off the standalone toolchain. The standalone toolchain
-    # script itself will not support 'riscv64' as a valid architecture.
-    if config.abi == "riscv64":
-        return True, ""
     # On Windows, the default directory for temporary files may have a different
     # (slow) configuration for security controls, indexing, etc. So we create
     # temporary directories directly in "out".

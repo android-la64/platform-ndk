@@ -62,6 +62,7 @@ def get_triple(arch):
     return {
         "arm": "arm-linux-androideabi",
         "arm64": "aarch64-linux-android",
+        "riscv64": "riscv64-linux-android",
         "x86": "i686-linux-android",
         "x86_64": "x86_64-linux-android",
     }[arch]
@@ -315,7 +316,8 @@ def warn_unnecessary(arch, api, host_tag):
     )
 
 
-def get_min_supported_api_level():
+def get_min_supported_api_level(arch):
+    # TODO: get this from the prebuilt sysroot instead
     platforms_json = os.path.join(NDK_DIR, "meta/platforms.json")
     with open(platforms_json) as platforms:
         return json.load(platforms)["min"]
@@ -334,7 +336,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--arch", required=True, choices=("arm", "arm64", "x86", "x86_64")
+        "--arch", required=True, choices=("arm", "arm64", "riscv64", "x86", "x86_64")
     )
     parser.add_argument(
         "--api", type=int, help='Target the given API version (example: "--api 24").'
@@ -397,8 +399,7 @@ def main():
 
     check_ndk_or_die()
 
-    lp32 = args.arch in ("arm", "x86")
-    min_api = get_min_supported_api_level() if lp32 else 21
+    min_api = get_min_supported_api_level(args.arch)
     api = args.api
     if api is None:
         logger().warning(
