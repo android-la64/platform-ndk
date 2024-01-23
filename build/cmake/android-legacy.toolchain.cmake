@@ -175,6 +175,7 @@ if(ANDROID_ABI STREQUAL armeabi-v7a)
   set(ANDROID_ARM_NEON TRUE)
 endif()
 
+include(${ANDROID_NDK}/build/cmake/abis.cmake)
 include(${ANDROID_NDK}/build/cmake/platforms.cmake)
 
 # If no platform version was chosen by the user, default to the minimum version
@@ -217,18 +218,15 @@ ${NDK_MIN_PLATFORM_LEVEL}.")
   string(REPLACE "android-" "" ANDROID_PLATFORM_LEVEL ${ANDROID_PLATFORM})
 endif()
 
-# And for LP64 we need to pull up to 21. No diagnostic is provided here because
-# minSdkVersion < 21 is valid for the project even though it may not be for this
-# ABI.
-if(ANDROID_ABI MATCHES "64(-v8a)?$" AND ANDROID_PLATFORM_LEVEL LESS 21)
-  set(ANDROID_PLATFORM android-21)
-  set(ANDROID_PLATFORM_LEVEL 21)
-endif()
+# Pull up any ABI-specific minimum API levels.
+set(min_for_abi ${NDK_ABI_${ANDROID_ABI}_MIN_OS_VERSION})
 
-# Pull up to 35 if the requested ABI was riscv64, the first version that supports it.
-if(ANDROID_ABI MATCHES "riscv64" AND ANDROID_PLATFORM_LEVEL LESS 35)
-  set(ANDROID_PLATFORM android-35)
-  set(ANDROID_PLATFORM_LEVEL 35)
+if(ANDROID_PLATFORM_LEVEL LESS min_for_abi)
+  message(STATUS
+    "${ANDROID_PLATFORM} is not supported for ${ANDROID_ABI}. Using minimum "
+    "supported ${ANDROID_ABI} version ${min_for_abi}.")
+  set(ANDROID_PLATFORM android-${min_for_abi})
+  set(ANDROID_PLATFORM_LEVEL ${min_for_abi})
 endif()
 
 # ANDROID_PLATFORM beyond the maximum is an error. The correct way to specify
