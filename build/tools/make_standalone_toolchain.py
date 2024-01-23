@@ -32,7 +32,7 @@ import stat
 import sys
 import tempfile
 import textwrap
-
+from pathlib import Path
 
 THIS_DIR = os.path.realpath(os.path.dirname(__file__))
 NDK_DIR = os.path.realpath(os.path.join(THIS_DIR, "../.."))
@@ -65,6 +65,17 @@ def get_triple(arch):
         "riscv64": "riscv64-linux-android",
         "x86": "i686-linux-android",
         "x86_64": "x86_64-linux-android",
+    }[arch]
+
+
+def arch_to_abi(arch: str) -> str:
+    """Return the ABI name for the given architecture."""
+    return {
+        "arm": "armeabi-v7a",
+        "arm64": "arm64-v8a",
+        "riscv64": "riscv64",
+        "x86": "x86",
+        "x86_64": "x86_64",
     }[arch]
 
 
@@ -316,11 +327,11 @@ def warn_unnecessary(arch, api, host_tag):
     )
 
 
-def get_min_supported_api_level(arch):
-    # TODO: get this from the prebuilt sysroot instead
-    platforms_json = os.path.join(NDK_DIR, "meta/platforms.json")
-    with open(platforms_json) as platforms:
-        return json.load(platforms)["min"]
+def get_min_supported_api_level(arch: str) -> int:
+    abis_json = Path(NDK_DIR) / "meta/abis.json"
+    with abis_json.open(encoding="utf-8") as abis_file:
+        data = json.load(abis_file)
+    return int(data[arch_to_abi(arch)]["min_os_version"])
 
 
 def parse_args():

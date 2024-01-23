@@ -133,7 +133,8 @@ below the target API level. For example, applications with a `minSdkVersion` of
 20 should use API 19 for their NDK target.
 
 To programatically determine the list of supported API levels as well as aliases
-that are accepted by ndk-build and CMake, see `<NDK>/meta/platforms.json`.
+that are accepted by ndk-build and CMake, see `<NDK>/meta/platforms.json`. For
+ABI specific minimum supported API levels, see `<NDK>/meta/abis.json`.
 
 Note: In some contexts the API level may be referred to as a platform. In this
 document an API level is always an integer, and a platform takes the form of

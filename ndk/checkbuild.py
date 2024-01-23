@@ -1875,6 +1875,7 @@ class Meta(ndk.builds.PackageModule):
     def install(self) -> None:
         super().install()
         self.create_system_libs_meta()
+        self.add_min_api_data_to_abis()
 
     def create_system_libs_meta(self) -> None:
         # Build system_libs.json based on what we find in the toolchain. We
@@ -1920,6 +1921,17 @@ class Meta(ndk.builds.PackageModule):
         json_path = self.get_install_path() / "system_libs.json"
         with json_path.open("w", encoding="utf-8") as json_file:
             json.dump(system_libs, json_file, indent=2, separators=(",", ": "))
+
+    def add_min_api_data_to_abis(self) -> None:
+        json_path = self.get_install_path() / "abis.json"
+        with json_path.open(encoding="utf-8") as json_file:
+            data = json.load(json_file)
+
+        for abi_name, abi_data in data.items():
+            abi_data["min_os_version"] = ndk.abis.min_api_for_abi(Abi(abi_name))
+
+        with json_path.open("w", encoding="utf-8") as json_file:
+            json.dump(data, json_file, indent=2, separators=(",", ": "))
 
 
 @register
