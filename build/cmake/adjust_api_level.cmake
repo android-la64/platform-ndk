@@ -1,3 +1,4 @@
+include(${CMAKE_ANDROID_NDK}/build/cmake/abis.cmake)
 include(${CMAKE_ANDROID_NDK}/build/cmake/platforms.cmake)
 
 function(adjust_api_level api_level result_name)
@@ -39,24 +40,15 @@ function(adjust_api_level api_level result_name)
     string(REPLACE "android-" "" result ${api_level})
   endif()
 
-  # And for LP64 we need to pull up to 21. No diagnostic is provided here
-  # because minSdkVersion < 21 is valid for the project even though it may not
-  # be for this ABI.
-  if(ANDROID_ABI MATCHES "64(-v8a)?$" AND NOT ANDROID_ABI MATCHES "riscv64" AND result LESS 21)
-    message(STATUS
-      "android-${result} is not supported for ${ANDROID_ABI}. Using minimum "
-      "supported LP64 version 21.")
-    set(api_level android-21)
-    set(result 21)
-  endif()
+  # Pull up any ABI-specific minimum API levels.
+  set(min_for_abi ${NDK_ABI_${ANDROID_ABI}_MIN_OS_VERSION})
 
-  # Pull up to 35 if the requested ABI was riscv64, the first version that supports it.
-  if(ANDROID_ABI MATCHES "riscv64" AND result LESS 35)
+  if(result LESS min_for_abi)
     message(STATUS
       "android-${result} is not supported for ${ANDROID_ABI}. Using minimum "
-      "supported riscv64 version 35.")
-    set(api_level android-35)
-    set(result 35)
+      "supported ${ANDROID_ABI} version ${min_for_abi}.")
+    set(api_level android-${min_for_abi})
+    set(result ${min_for_abi})
   endif()
 
   # ANDROID_PLATFORM beyond the maximum is an error. The correct way to specify

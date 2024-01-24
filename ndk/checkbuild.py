@@ -1531,8 +1531,7 @@ def abis_meta_transform(metadata: dict[str, Any]) -> dict[str, Any]:
         abi_infos[f"NDK_ABI_{abi}_ARCH"] = arch
         abi_infos[f"NDK_ABI_{abi}_TRIPLE"] = triple
         abi_infos[f"NDK_ABI_{abi}_LLVM_TRIPLE"] = llvm_triple
-        abi_infos[f"NDK_PROC_{proc}_ABI"] = abi
-        abi_infos[f"NDK_ARCH_{arch}_ABI"] = abi
+        abi_infos[f"NDK_ABI_{abi}_MIN_OS_VERSION"] = int(abi_data["min_os_version"])
 
     meta_vars = {
         "NDK_DEFAULT_ABIS": sorted(default_abis),

@@ -28,20 +28,12 @@ TARGET_OUT := $(NDK_APP_OUT)/$(_app)/$(TARGET_ARCH_ABI)
 
 TARGET_PLATFORM_LEVEL := $(APP_PLATFORM_LEVEL)
 
-# 64-bit ABIs were first supported in API 21. Pull up these ABIs if the app has
-# a lower minSdkVersion.
-ifneq ($(filter $(NDK_KNOWN_DEVICE_ABI64S),$(TARGET_ARCH_ABI)),)
-    ifneq ($(call lt,$(TARGET_PLATFORM_LEVEL),21),)
-        TARGET_PLATFORM_LEVEL := 21
-    endif
-endif
-
-# The 'riscv64' ABI was first supported in API 35. Pull up these ABIs if the app
-# has a lower minSdkVersion.
-ifeq ($(TARGET_ARCH_ABI),riscv64)
-    ifneq ($(call lt,$(TARGET_PLATFORM_LEVEL),35),)
-        TARGET_PLATFORM_LEVEL := 35
-    endif
+# Pull up the minSdkVersion for this ABI if it is higher than the user's
+# APP_PLATFORM. A warning will be separately emitted in setup-app-platform.mk if
+# the user's APP_PLATFORM is too low for the NDK overall.
+MIN_OS_FOR_TARGET := $(NDK_ABI_${TARGET_ARCH_ABI}_MIN_OS_VERSION)
+ifneq ($(call lt,$(TARGET_PLATFORM_LEVEL),$(MIN_OS_FOR_TARGET)),)
+    TARGET_PLATFORM_LEVEL := $(MIN_OS_FOR_TARGET)
 endif
 
 # Not used by ndk-build, but are documented for use by Android.mk files.
