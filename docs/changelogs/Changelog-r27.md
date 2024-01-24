@@ -20,11 +20,20 @@ directly, see the [build system maintainers guide].
 * A RISC-V sysroot (AKA riscv64, or rv64) has been added. It is **not**
   supported. It is present to aid bringup for OS vendors, but it's not yet a
   supported Android ABI. It will not be built by default.
+* [Issue 1856]: Target-prefixed cmd wrappers for clang should now behave
+  appropriately when the first argument includes quotes. **You probably do not
+  need to use those wrappers.** In most cases where you would use
+  `aarch64-linux-android21-clang`, you can instead use `clang -target
+  aarch64-linux-android21`, e.g. `CC="clang -target aarch64-linux-android21"
+  ./configure`. The wrappers are only needed when working with systems that do
+  not properly handle a `CC` that includes arguments.
 * [Issue 1898]: ndk-stack now tolerates 0x prefixed addresses.
 * [Issue 1921]: `ANDROID_USE_LEGACY_TOOLCHAIN_FILE` value is now preserved
   during try-compile steps when `ON`.
 
+[Issue 1856]: https://github.com/android/ndk/issues/1856
 [Issue 1898]: https://github.com/android/ndk/issues/1898
+
 
 ## Known Issues
 

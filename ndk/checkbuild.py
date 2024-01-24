@@ -1188,7 +1188,7 @@ def write_clang_batch_script(
             @echo off
             setlocal
             call :find_bin
-            if "%1" == "-cc1" goto :L
+            if "%~1" == "-cc1" goto :L
 
             set "_BIN_DIR=" && "%_BIN_DIR%{clang_name}" {' '.join(flags)} %*
             if ERRORLEVEL 1 exit /b 1
