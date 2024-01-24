@@ -33,6 +33,7 @@ directly, see the [build system maintainers guide].
 
 [Issue 1856]: https://github.com/android/ndk/issues/1856
 [Issue 1898]: https://github.com/android/ndk/issues/1898
+[Issue 1921]: https://github.com/android/ndk/issues/1921
 
 
 ## Known Issues
