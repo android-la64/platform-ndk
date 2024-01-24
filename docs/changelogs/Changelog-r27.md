@@ -21,6 +21,8 @@ directly, see the [build system maintainers guide].
   supported. It is present to aid bringup for OS vendors, but it's not yet a
   supported Android ABI. It will not be built by default.
 * [Issue 1898]: ndk-stack now tolerates 0x prefixed addresses.
+* [Issue 1921]: `ANDROID_USE_LEGACY_TOOLCHAIN_FILE` value is now preserved
+  during try-compile steps when `ON`.
 
 [Issue 1898]: https://github.com/android/ndk/issues/1898
 
