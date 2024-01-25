@@ -1441,41 +1441,6 @@ class Toolchain(ndk.builds.Module):
                 (dst_dir / "libc++.a").write_text("INPUT(-lc++_static -lc++abi)")
 
 
-@register
-class Vulkan(ndk.builds.Module):
-    name = "vulkan"
-    install_path = Path("sources/third_party/vulkan")
-    notice = ANDROID_DIR / "external/vulkan-headers/NOTICE"
-
-    def build(self) -> None:
-        pass
-
-    def install(self) -> None:
-        default_ignore_patterns = shutil.ignore_patterns(
-            "*CMakeLists.txt", "*test.cc", "linux", "windows"
-        )
-
-        source_dir = ANDROID_DIR / "external/vulkan-headers"
-        dest_dir = self.get_install_path() / "src"
-        for d in ["include", "registry"]:
-            src = source_dir / d
-            dst = dest_dir / d
-            shutil.rmtree(dst, ignore_errors=True)
-            shutil.copytree(src, dst, ignore=default_ignore_patterns)
-
-        android_mk = dest_dir / "build-android/jni/Android.mk"
-        android_mk.parent.mkdir(parents=True, exist_ok=True)
-        url = "https://github.com/KhronosGroup/Vulkan-ValidationLayers"
-        android_mk.write_text(
-            textwrap.dedent(
-                f"""\
-            $(warning The Vulkan Validation Layers are now distributed on \\
-                GitHub. See {url} for more information.)
-            """
-            )
-        )
-
-
 def make_format_value(value: Any) -> Any:
     if isinstance(value, list):
         return " ".join(value)
