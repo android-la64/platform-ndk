@@ -2650,7 +2650,7 @@ def main() -> None:
     # TODO(danalbert): wine?
     # We're building the Windows packages from Linux, so we can't actually run
     # any of the tests from here.
-    if args.system.is_windows or not (have_required_modules or args.skip_deps):
+    if args.system.is_windows or not have_required_modules:
         args.build_tests = False
 
     os.chdir(Path(__file__).resolve().parent.parent)
