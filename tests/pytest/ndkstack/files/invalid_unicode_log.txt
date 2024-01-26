@@ -1,0 +1,1 @@
+01-08 15:14:19.624   559   638 E NativeTombstoneManager: Tombstone has invalid selinux label (u:r:priv_app:s0:c512,c768À€), ignoring

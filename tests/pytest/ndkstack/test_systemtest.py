@@ -20,6 +20,9 @@ import os.path
 import subprocess
 import unittest
 
+import pytest
+
+import ndk.ext.subprocess
 import ndk.paths
 import ndk.toolchains
 from ndk.hosts import Host
@@ -69,6 +72,13 @@ class SystemTests(unittest.TestCase):
 
     def test_hwasan(self) -> None:
         self.system_test("hwasan.txt", "expected_hwasan.txt")
+
+    @pytest.mark.xfail
+    def test_invalid_unicode(self) -> None:
+        with ndk.ext.subprocess.verbose_subprocess_errors():
+            self.system_test(
+                "invalid_unicode_log.txt", "expected_invalid_unicode_log.txt"
+            )
 
 
 if __name__ == "__main__":
