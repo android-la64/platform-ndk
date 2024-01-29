@@ -37,9 +37,10 @@ class TestFindLlvmSymbolizer:
         symbolizer_path = symbolizer_path.with_suffix(ndkstack.EXE_SUFFIX)
         symbolizer_path.parent.mkdir(parents=True)
         symbolizer_path.touch()
-        assert ndkstack.find_llvm_symbolizer(
-            str(ndk_path), str(ndk_path / "bin"), "linux-x86_64"
-        ) == str(symbolizer_path)
+        assert (
+            ndkstack.find_llvm_symbolizer(ndk_path, ndk_path / "bin", "linux-x86_64")
+            == symbolizer_path
+        )
 
     def test_find_in_standalone_toolchain(self, tmp_path: Path) -> None:
         ndk_path = tmp_path / "ndk"
@@ -47,15 +48,14 @@ class TestFindLlvmSymbolizer:
         symbolizer_path = symbolizer_path.with_suffix(ndkstack.EXE_SUFFIX)
         symbolizer_path.parent.mkdir(parents=True)
         symbolizer_path.touch()
-        assert ndkstack.find_llvm_symbolizer(
-            str(ndk_path), str(ndk_path / "bin"), "linux-x86_64"
-        ) == str(symbolizer_path)
+        assert (
+            ndkstack.find_llvm_symbolizer(ndk_path, ndk_path / "bin", "linux-x86_64")
+            == symbolizer_path
+        )
 
     def test_not_found(self, tmp_path: Path) -> None:
         with pytest.raises(OSError, match="Unable to find llvm-symbolizer"):
-            ndkstack.find_llvm_symbolizer(
-                str(tmp_path), str(tmp_path / "bin"), "linux-x86_64"
-            )
+            ndkstack.find_llvm_symbolizer(tmp_path, tmp_path / "bin", "linux-x86_64")
 
 
 class TestFindReadelf:
@@ -67,9 +67,10 @@ class TestFindReadelf:
         readelf_path = readelf_path.with_suffix(ndkstack.EXE_SUFFIX)
         readelf_path.parent.mkdir(parents=True)
         readelf_path.touch()
-        assert ndkstack.find_readelf(
-            str(ndk_path), str(ndk_path / "bin"), "linux-x86_64"
-        ) == str(readelf_path)
+        assert (
+            ndkstack.find_readelf(ndk_path, ndk_path / "bin", "linux-x86_64")
+            == readelf_path
+        )
 
     def test_find_in_standalone_toolchain(self, tmp_path: Path) -> None:
         ndk_path = tmp_path / "ndk"
@@ -77,15 +78,13 @@ class TestFindReadelf:
         readelf_path = readelf_path.with_suffix(ndkstack.EXE_SUFFIX)
         readelf_path.parent.mkdir(parents=True)
         readelf_path.touch()
-        assert ndkstack.find_readelf(
-            str(ndk_path), str(ndk_path / "bin"), "linux-x86_64"
-        ) == str(readelf_path)
+        assert (
+            ndkstack.find_readelf(ndk_path, ndk_path / "bin", "linux-x86_64")
+            == readelf_path
+        )
 
     def test_not_found(self, tmp_path: Path) -> None:
-        assert (
-            ndkstack.find_readelf(str(tmp_path), str(tmp_path / "bin"), "linux-x86_64")
-            is None
-        )
+        assert ndkstack.find_readelf(tmp_path, tmp_path / "bin", "linux-x86_64") is None
 
 
 class FrameTests(unittest.TestCase):
@@ -210,10 +209,12 @@ class VerifyElfFileTests(unittest.TestCase):
         mock_exists.return_value = False
         frame_info = self.create_frame_info()
         self.assertFalse(
-            frame_info.verify_elf_file(None, "/fake/libfake.so", "libfake.so")
+            frame_info.verify_elf_file(None, Path("/fake/libfake.so"), "libfake.so")
         )
         self.assertFalse(
-            frame_info.verify_elf_file("llvm-readelf", "/fake/libfake.so", "libfake.so")
+            frame_info.verify_elf_file(
+                Path("llvm-readelf"), Path("/fake/libfake.so"), "libfake.so"
+            )
         )
 
     def test_elf_file_build_id_matches(
@@ -223,17 +224,19 @@ class VerifyElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info()
         frame_info.build_id = "MOCKED_BUILD_ID"
         self.assertTrue(
-            frame_info.verify_elf_file(None, "/mocked/libfake.so", "libfake.so")
+            frame_info.verify_elf_file(None, Path("/mocked/libfake.so"), "libfake.so")
         )
         mock_get_build_id.assert_not_called()
 
         mock_get_build_id.return_value = "MOCKED_BUILD_ID"
         self.assertTrue(
             frame_info.verify_elf_file(
-                "llvm-readelf", "/mocked/libfake.so", "libfake.so"
+                Path("llvm-readelf"), Path("/mocked/libfake.so"), "libfake.so"
             )
         )
-        mock_get_build_id.assert_called_once_with("llvm-readelf", "/mocked/libfake.so")
+        mock_get_build_id.assert_called_once_with(
+            Path("llvm-readelf"), Path("/mocked/libfake.so")
+        )
 
     def test_elf_file_build_id_does_not_match(
         self, mock_exists: Mock, mock_get_build_id: Mock
@@ -244,11 +247,11 @@ class VerifyElfFileTests(unittest.TestCase):
         frame_info.build_id = "DIFFERENT_BUILD_ID"
         with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
             self.assertTrue(
-                frame_info.verify_elf_file(None, "/mocked/libfake.so", "none.so")
+                frame_info.verify_elf_file(None, Path("/mocked/libfake.so"), "none.so")
             )
             self.assertFalse(
                 frame_info.verify_elf_file(
-                    "llvm-readelf", "/mocked/libfake.so", "display.so"
+                    Path("llvm-readelf"), Path("/mocked/libfake.so"), "display.so"
                 )
             )
         output = textwrap.dedent(
@@ -353,13 +356,13 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/libfake.so")
         frame_info.verify_elf_file.return_value = True
         self.assertEqual(
-            "/fake_dir/symbols/libfake.so",
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp),
+            Path("/fake_dir/symbols/libfake.so"),
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp),
         )
         frame_info.verify_elf_file.reset_mock()
         frame_info.verify_elf_file.return_value = False
         self.assertFalse(
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp)
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp)
         )
         self.assertEqual("/fake/libfake.so", frame_info.tail)
 
@@ -367,8 +370,8 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/fake.apk!libtest.so")
         frame_info.verify_elf_file.return_value = True
         self.assertEqual(
-            "/fake_dir/symbols/libtest.so",
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp),
+            Path("/fake_dir/symbols/libtest.so"),
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp),
         )
         self.assertEqual("/fake/fake.apk!libtest.so", frame_info.tail)
 
@@ -376,7 +379,7 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/fake.apk!libtest.so")
         frame_info.verify_elf_file.return_value = False
         with self.assertRaises(IOError):
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp)
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp)
         self.assertEqual("/fake/fake.apk!libtest.so", frame_info.tail)
 
     @patch.object(ndkstack, "get_zip_info_from_offset")
@@ -388,7 +391,7 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/fake.apk!libtest.so (offset 0x2000)")
         frame_info.verify_elf_file.return_value = False
         self.assertFalse(
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp)
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp)
         )
         self.assertEqual("/fake/fake.apk!libtest.so (offset 0x2000)", frame_info.tail)
 
@@ -403,8 +406,8 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/fake.apk!libtest.so (offset 0x2000)")
         frame_info.verify_elf_file.side_effect = [False, True]
         self.assertEqual(
-            "/fake_tmp/libtest.so",
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp),
+            Path("/fake_tmp/libtest.so"),
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp),
         )
         self.assertEqual("/fake/fake.apk!libtest.so (offset 0x2000)", frame_info.tail)
 
@@ -419,7 +422,7 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/fake.apk!libtest.so (offset 0x2000)")
         frame_info.verify_elf_file.side_effect = [False, False]
         self.assertFalse(
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp)
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp)
         )
         self.assertEqual("/fake/fake.apk!libtest.so (offset 0x2000)", frame_info.tail)
 
@@ -427,7 +430,7 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/fake.apk")
         frame_info.verify_elf_file.return_value = False
         with self.assertRaises(IOError):
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp)
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp)
         self.assertEqual("/fake/fake.apk", frame_info.tail)
 
     @patch.object(ndkstack, "get_zip_info_from_offset")
@@ -436,7 +439,7 @@ class GetElfFileTests(unittest.TestCase):
         mock_get_zip_info.return_value = None
         frame_info = self.create_frame_info("/fake/fake.apk (offset 0x2000)")
         self.assertFalse(
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp)
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp)
         )
         self.assertEqual("/fake/fake.apk (offset 0x2000)", frame_info.tail)
 
@@ -451,8 +454,8 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/fake.apk (offset 0x2000)")
         frame_info.verify_elf_file.return_value = True
         self.assertEqual(
-            "/fake_dir/symbols/libtest.so",
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp),
+            Path("/fake_dir/symbols/libtest.so"),
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp),
         )
         self.assertEqual("/fake/fake.apk!libtest.so (offset 0x2000)", frame_info.tail)
 
@@ -467,8 +470,8 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/fake.apk (offset 0x2000)")
         frame_info.verify_elf_file.side_effect = [False, True]
         self.assertEqual(
-            "/fake_tmp/libtest.so",
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp),
+            Path("/fake_tmp/libtest.so"),
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp),
         )
         self.assertEqual("/fake/fake.apk!libtest.so (offset 0x2000)", frame_info.tail)
 
@@ -483,7 +486,7 @@ class GetElfFileTests(unittest.TestCase):
         frame_info = self.create_frame_info("/fake/fake.apk (offset 0x2000)")
         frame_info.verify_elf_file.side_effect = [False, False]
         self.assertFalse(
-            frame_info.get_elf_file("/fake_dir/symbols", None, self.mock_tmp)
+            frame_info.get_elf_file(Path("/fake_dir/symbols"), None, self.mock_tmp)
         )
         self.assertEqual("/fake/fake.apk!libtest.so (offset 0x2000)", frame_info.tail)
 

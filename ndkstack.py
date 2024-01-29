@@ -38,19 +38,19 @@ class TmpDir:
     """Manage temporary directory creation."""
 
     def __init__(self) -> None:
-        self._tmp_dir: str | None = None
+        self._tmp_dir: Path | None = None
 
     def delete(self) -> None:
         if self._tmp_dir:
             shutil.rmtree(self._tmp_dir)
 
-    def get_directory(self) -> str:
+    def get_directory(self) -> Path:
         if not self._tmp_dir:
-            self._tmp_dir = tempfile.mkdtemp()
+            self._tmp_dir = Path(tempfile.mkdtemp())
         return self._tmp_dir
 
 
-def get_ndk_paths() -> tuple[str, str, str]:
+def get_ndk_paths() -> tuple[Path, Path, str]:
     """Parse and find all of the paths of the ndk
 
     Returns: Three values:
@@ -74,32 +74,31 @@ def get_ndk_paths() -> tuple[str, str, str]:
     ndk_root = ndk_bin.parent.parent.parent
     # ...get `linux-x86_64`:
     ndk_host_tag = ndk_bin.parent.name
-    return (str(ndk_root), str(ndk_bin), str(ndk_host_tag))
+    return ndk_root, ndk_bin, ndk_host_tag
 
 
-def find_llvm_symbolizer(ndk_root: str, ndk_bin: str, ndk_host_tag: str) -> str:
+def find_llvm_symbolizer(ndk_root: Path, ndk_bin: Path, ndk_host_tag: str) -> Path:
     """Finds the NDK llvm-symbolizer(1) binary.
 
     Returns: An absolute path to llvm-symbolizer(1).
     """
 
     llvm_symbolizer = "llvm-symbolizer" + EXE_SUFFIX
-    path = os.path.join(
-        ndk_root, "toolchains", "llvm", "prebuilt", ndk_host_tag, "bin", llvm_symbolizer
+    path = (
+        ndk_root / "toolchains/llvm/prebuilt" / ndk_host_tag / "bin" / llvm_symbolizer
     )
-    if os.path.exists(path):
+    if path.exists():
         return path
 
     # Okay, maybe we're a standalone toolchain? (https://github.com/android-ndk/ndk/issues/931)
     # In that case, llvm-symbolizer and ndk-stack are conveniently in
     # the same directory...
-    path = os.path.abspath(os.path.join(ndk_bin, llvm_symbolizer))
-    if os.path.exists(path):
+    if (path := ndk_bin / llvm_symbolizer).exists():
         return path
     raise OSError("Unable to find llvm-symbolizer")
 
 
-def find_readelf(ndk_root: str, ndk_bin: str, ndk_host_tag: str) -> str | None:
+def find_readelf(ndk_root: Path, ndk_bin: Path, ndk_host_tag: str) -> Path | None:
     """Finds the NDK readelf(1) binary.
 
     Returns: An absolute path to readelf(1).
@@ -109,20 +108,18 @@ def find_readelf(ndk_root: str, ndk_bin: str, ndk_host_tag: str) -> str | None:
     m = re.match("^[^-]+-(.*)", ndk_host_tag)
     if m:
         # Try as if this is not a standalone install.
-        path = os.path.join(
-            ndk_root, "toolchains", "llvm", "prebuilt", ndk_host_tag, "bin", readelf
-        )
-        if os.path.exists(path):
+        path = ndk_root / "toolchains/llvm/prebuilt" / ndk_host_tag / "bin" / readelf
+        if path.exists():
             return path
 
     # Might be a standalone toolchain.
-    path = os.path.normpath(os.path.join(ndk_bin, readelf))
-    if os.path.exists(path):
+    path = ndk_bin / readelf
+    if path.exists():
         return path
     return None
 
 
-def get_build_id(readelf_path: str, elf_file: str) -> str | None:
+def get_build_id(readelf_path: Path, elf_file: Path) -> str | None:
     """Get the GNU build id note from an elf file.
 
     Returns: The build id found or None if there is no build id or the
@@ -130,7 +127,7 @@ def get_build_id(readelf_path: str, elf_file: str) -> str | None:
     """
 
     try:
-        output = subprocess.check_output([readelf_path, "-n", elf_file])
+        output = subprocess.check_output([str(readelf_path), "-n", str(elf_file)])
         m = re.search(r"Build ID:\s+([0-9a-f]+)", output.decode())
         if not m:
             return None
@@ -251,7 +248,7 @@ class FrameInfo:
             self.build_id = None
 
     def verify_elf_file(
-        self, readelf_path: str | None, elf_file_path: str, display_elf_path: str
+        self, readelf_path: Path | None, elf_file_path: Path, display_elf_path: str
     ) -> bool:
         """Verify if the elf file is valid.
 
@@ -270,8 +267,8 @@ class FrameInfo:
         return True
 
     def get_elf_file(
-        self, symbol_dir: str, readelf_path: str | None, tmp_dir: TmpDir
-    ) -> str | None:
+        self, symbol_dir: Path, readelf_path: Path | None, tmp_dir: TmpDir
+    ) -> Path | None:
         """Get the path to the elf file represented by this frame.
 
         Returns: The path to the elf file if it is valid, or None if
@@ -284,8 +281,8 @@ class FrameInfo:
         if self.container_file:
             # This matches a file format such as Base.apk!libsomething.so
             # so see if we can find libsomething.so in the symbol directory.
-            elf_file_path = os.path.join(symbol_dir, elf_file)
-            if self.verify_elf_file(readelf_path, elf_file_path, elf_file_path):
+            elf_file_path = symbol_dir / elf_file
+            if self.verify_elf_file(readelf_path, elf_file_path, str(elf_file_path)):
                 return elf_file_path
 
             apk_file_path = os.path.join(
@@ -296,7 +293,9 @@ class FrameInfo:
                 zip_info = get_zip_info_from_offset(zip_file, self.offset)
                 if not zip_info:
                     return None
-                elf_file_path = zip_file.extract(zip_info, tmp_dir.get_directory())
+                elf_file_path = Path(
+                    zip_file.extract(zip_info, tmp_dir.get_directory())
+                )
                 display_elf_file = "%s!%s" % (apk_file_path, elf_file)
                 if not self.verify_elf_file(
                     readelf_path, elf_file_path, display_elf_file
@@ -327,27 +326,31 @@ class FrameInfo:
                         + self.tail[index:]
                     )
                 elf_file = os.path.basename(zip_info.filename)
-                elf_file_path = os.path.join(symbol_dir, elf_file)
-                if self.verify_elf_file(readelf_path, elf_file_path, elf_file_path):
+                elf_file_path = symbol_dir / elf_file
+                if self.verify_elf_file(
+                    readelf_path, elf_file_path, str(elf_file_path)
+                ):
                     return elf_file_path
 
-                elf_file_path = zip_file.extract(zip_info, tmp_dir.get_directory())
+                elf_file_path = Path(
+                    zip_file.extract(zip_info, tmp_dir.get_directory())
+                )
                 display_elf_path = "%s!%s" % (apk_file_path, elf_file)
                 if not self.verify_elf_file(
                     readelf_path, elf_file_path, display_elf_path
                 ):
                     return None
                 return elf_file_path
-        elf_file_path = os.path.join(symbol_dir, elf_file)
-        if self.verify_elf_file(readelf_path, elf_file_path, elf_file_path):
+        elf_file_path = symbol_dir / elf_file
+        if self.verify_elf_file(readelf_path, elf_file_path, str(elf_file_path)):
             return elf_file_path
         return None
 
 
-def symbolize_trace(trace_input: TextIO, symbol_dir: str) -> None:
+def symbolize_trace(trace_input: TextIO, symbol_dir: Path) -> None:
     ndk_paths = get_ndk_paths()
     symbolize_cmd = [
-        find_llvm_symbolizer(*ndk_paths),
+        str(find_llvm_symbolizer(*ndk_paths)),
         "--demangle",
         "--functions=linkage",
         "--inlines",
@@ -440,6 +443,7 @@ def main(argv: list[str] | None = None) -> None:
         "-sym",
         "--sym",
         dest="symbol_dir",
+        type=Path,
         required=True,  # TODO: default to '.'?
         help="directory containing unstripped .so files",
     )
