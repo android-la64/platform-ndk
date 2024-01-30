@@ -551,4 +551,4 @@ class ShardingWorkQueue(BaseWorkQueue[ResultT], Generic[ResultT, ShardT]):
 
 
 WorkQueue = ProcessPoolWorkQueue
-AnyWorkQueue = Union[BasicWorkQueue, ProcessPoolWorkQueue]
+AnyWorkQueue = Union[BasicWorkQueue[Any], ProcessPoolWorkQueue]
