@@ -15,110 +15,77 @@
 # limitations under the License.
 #
 """Unittests for ndk-stack.py"""
-import os.path
 import textwrap
 import unittest
 from io import StringIO
+from pathlib import Path
 from typing import Any
 from unittest import mock
 from unittest.mock import Mock, patch
 
+import pytest
+
 import ndkstack
 
 
-@patch("os.path.exists")
-class PathTests(unittest.TestCase):
-    """Tests of find_llvm_symbolizer() and find_readelf()."""
-
-    def setUp(self) -> None:
-        self.ndk_paths = ("/ndk_fake", "/ndk_fake/bin", "linux-x86_64")
-        exe_suffix = ".EXE" if os.name == "nt" else ""
-        self.llvm_symbolizer = "llvm-symbolizer" + exe_suffix
-        self.readelf = "llvm-readelf" + exe_suffix
-
-    def test_find_llvm_symbolizer_in_prebuilt(self, mock_exists: Mock) -> None:
-        expected_path = os.path.join(
-            "/ndk_fake",
-            "toolchains",
-            "llvm",
-            "prebuilt",
-            "linux-x86_64",
-            "bin",
-            self.llvm_symbolizer,
+class TestFindLlvmSymbolizer:
+    def test_find_in_prebuilt(self, tmp_path: Path) -> None:
+        ndk_path = tmp_path / "ndk"
+        symbolizer_path = (
+            ndk_path / "toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-symbolizer"
         )
-        mock_exists.return_value = True
-        self.assertEqual(expected_path, ndkstack.find_llvm_symbolizer(*self.ndk_paths))
-        mock_exists.assert_called_once_with(expected_path)
+        symbolizer_path = symbolizer_path.with_suffix(ndkstack.EXE_SUFFIX)
+        symbolizer_path.parent.mkdir(parents=True)
+        symbolizer_path.touch()
+        assert ndkstack.find_llvm_symbolizer(
+            str(ndk_path), str(ndk_path / "bin"), "linux-x86_64"
+        ) == str(symbolizer_path)
 
-    def test_find_llvm_symbolizer_in_standalone_toolchain(
-        self, mock_exists: Mock
-    ) -> None:
-        prebuilt_path = os.path.join(
-            "/ndk_fake",
-            "toolchains",
-            "llvm",
-            "prebuilt",
-            "linux-x86_64",
-            "bin",
-            self.llvm_symbolizer,
+    def test_find_in_standalone_toolchain(self, tmp_path: Path) -> None:
+        ndk_path = tmp_path / "ndk"
+        symbolizer_path = ndk_path / "bin/llvm-symbolizer"
+        symbolizer_path = symbolizer_path.with_suffix(ndkstack.EXE_SUFFIX)
+        symbolizer_path.parent.mkdir(parents=True)
+        symbolizer_path.touch()
+        assert ndkstack.find_llvm_symbolizer(
+            str(ndk_path), str(ndk_path / "bin"), "linux-x86_64"
+        ) == str(symbolizer_path)
+
+    def test_not_found(self, tmp_path: Path) -> None:
+        with pytest.raises(OSError, match="Unable to find llvm-symbolizer"):
+            ndkstack.find_llvm_symbolizer(
+                str(tmp_path), str(tmp_path / "bin"), "linux-x86_64"
+            )
+
+
+class TestFindReadelf:
+    def test_find_in_prebuilt(self, tmp_path: Path) -> None:
+        ndk_path = tmp_path / "ndk"
+        readelf_path = (
+            ndk_path / "toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-readelf"
         )
-        expected_path = os.path.join("/ndk_fake", "bin", self.llvm_symbolizer)
-        mock_exists.side_effect = [False, True]
-        self.assertEqual(expected_path, ndkstack.find_llvm_symbolizer(*self.ndk_paths))
-        mock_exists.assert_has_calls(
-            [mock.call(prebuilt_path), mock.call(expected_path)]
+        readelf_path = readelf_path.with_suffix(ndkstack.EXE_SUFFIX)
+        readelf_path.parent.mkdir(parents=True)
+        readelf_path.touch()
+        assert ndkstack.find_readelf(
+            str(ndk_path), str(ndk_path / "bin"), "linux-x86_64"
+        ) == str(readelf_path)
+
+    def test_find_in_standalone_toolchain(self, tmp_path: Path) -> None:
+        ndk_path = tmp_path / "ndk"
+        readelf_path = ndk_path / "bin/llvm-readelf"
+        readelf_path = readelf_path.with_suffix(ndkstack.EXE_SUFFIX)
+        readelf_path.parent.mkdir(parents=True)
+        readelf_path.touch()
+        assert ndkstack.find_readelf(
+            str(ndk_path), str(ndk_path / "bin"), "linux-x86_64"
+        ) == str(readelf_path)
+
+    def test_not_found(self, tmp_path: Path) -> None:
+        assert (
+            ndkstack.find_readelf(str(tmp_path), str(tmp_path / "bin"), "linux-x86_64")
+            is None
         )
-
-    def test_llvm_symbolizer_not_found(self, mock_exists: Mock) -> None:
-        mock_exists.return_value = False
-        with self.assertRaises(OSError) as cm:
-            ndkstack.find_llvm_symbolizer(*self.ndk_paths)
-        self.assertEqual("Unable to find llvm-symbolizer", str(cm.exception))
-
-    def test_find_readelf_in_prebuilt(self, mock_exists: Mock) -> None:
-        expected_path = os.path.join(
-            "/ndk_fake",
-            "toolchains",
-            "llvm",
-            "prebuilt",
-            "linux-x86_64",
-            "bin",
-            self.readelf,
-        )
-        mock_exists.return_value = True
-        self.assertEqual(expected_path, ndkstack.find_readelf(*self.ndk_paths))
-        mock_exists.assert_called_once_with(expected_path)
-
-    def test_find_readelf_in_prebuilt_arm(self, mock_exists: Mock) -> None:
-        expected_path = os.path.join(
-            "/ndk_fake",
-            "toolchains",
-            "llvm",
-            "prebuilt",
-            "linux-arm",
-            "bin",
-            self.readelf,
-        )
-        mock_exists.return_value = True
-        self.assertEqual(
-            expected_path,
-            ndkstack.find_readelf("/ndk_fake", "/ndk_fake/bin", "linux-arm"),
-        )
-        mock_exists.assert_called_once_with(expected_path)
-
-    def test_find_readelf_in_standalone_toolchain(self, mock_exists: Mock) -> None:
-        mock_exists.reset_mock()
-        expected_path = os.path.join("/ndk_fake", "bin", self.readelf)
-
-        def mock_exists_impl(path: str) -> bool:
-            return path == expected_path
-
-        mock_exists.side_effect = mock_exists_impl
-        self.assertEqual(expected_path, ndkstack.find_readelf(*self.ndk_paths))
-
-    def test_readelf_not_found(self, mock_exists: Mock) -> None:
-        mock_exists.return_value = False
-        self.assertFalse(ndkstack.find_readelf(*self.ndk_paths))
 
 
 class FrameTests(unittest.TestCase):
