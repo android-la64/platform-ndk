@@ -21,6 +21,17 @@ directly, see the [build system maintainers guide].
 
 [Issue 1751]: https://github.com/android/ndk/issues/1751
 
+## r26c
+
+* Updated LLVM to clang-r487747d. See `AndroidVersion.txt` and
+  `clang_source_info.md` in the toolchain directory for version information.
+  * [Issue 1928]: Fixed Clang crash in instruction selection for 32-bit armv8
+    floating point.
+  * [Issue 1953]: armeabi-v7a libc++ libraries are once again built as thumb.
+
+[Issue 1928]: https://github.com/android/ndk/issues/1928
+[Issue 1953]: https://github.com/android/ndk/issues/1953
+
 ## r26b
 
 * Updated LLVM to clang-r487747d. See `AndroidVersion.txt` and
