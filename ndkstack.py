@@ -29,6 +29,7 @@ import sys
 import tempfile
 import zipfile
 from pathlib import Path
+from typing import TextIO
 
 EXE_SUFFIX = ".exe" if os.name == "nt" else ""
 
@@ -343,33 +344,7 @@ class FrameInfo:
         return None
 
 
-def main(argv: list[str] | None = None) -> None:
-    """ "Program entry point."""
-    parser = argparse.ArgumentParser(
-        description="Symbolizes Android crashes.",
-        epilog="See <https://developer.android.com/ndk/guides/ndk-stack>.",
-    )
-    parser.add_argument(
-        "-sym",
-        "--sym",
-        dest="symbol_dir",
-        required=True,  # TODO: default to '.'?
-        help="directory containing unstripped .so files",
-    )
-    parser.add_argument(
-        "-i",
-        "-dump",
-        "--dump",
-        dest="input",
-        default=sys.stdin,
-        type=argparse.FileType("r"),
-        help="input filename",
-    )
-    args = parser.parse_args(argv)
-
-    if not os.path.exists(args.symbol_dir):
-        sys.exit("{} does not exist!\n".format(args.symbol_dir))
-
+def symbolize_trace(trace_input: TextIO, symbol_dir: str) -> None:
     ndk_paths = get_ndk_paths()
     symbolize_cmd = [
         find_llvm_symbolizer(*ndk_paths),
@@ -380,6 +355,7 @@ def main(argv: list[str] | None = None) -> None:
     readelf_path = find_readelf(*ndk_paths)
 
     symbolize_proc = None
+
     try:
         tmp_dir = TmpDir()
         symbolize_proc = subprocess.Popen(
@@ -390,7 +366,7 @@ def main(argv: list[str] | None = None) -> None:
         banner = "*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***"
         in_crash = False
         saw_frame = False
-        for line in args.input:
+        for line in trace_input:
             line = line.rstrip()
 
             if not in_crash:
@@ -419,9 +395,7 @@ def main(argv: list[str] | None = None) -> None:
                 saw_frame = True
 
             try:
-                elf_file = frame_info.get_elf_file(
-                    args.symbol_dir, readelf_path, tmp_dir
-                )
+                elf_file = frame_info.get_elf_file(symbol_dir, readelf_path, tmp_dir)
             except IOError:
                 elf_file = None
 
@@ -445,7 +419,7 @@ def main(argv: list[str] | None = None) -> None:
                 # TODO: rewrite file names base on a source path?
                 print("%s%s" % (indent, symbolizer_output.decode()))
     finally:
-        args.input.close()
+        trace_input.close()
         tmp_dir.delete()
         if symbolize_proc:
             assert symbolize_proc.stdin is not None
@@ -454,6 +428,36 @@ def main(argv: list[str] | None = None) -> None:
             symbolize_proc.stdout.close()
             symbolize_proc.kill()
             symbolize_proc.wait()
+
+
+def main(argv: list[str] | None = None) -> None:
+    """ "Program entry point."""
+    parser = argparse.ArgumentParser(
+        description="Symbolizes Android crashes.",
+        epilog="See <https://developer.android.com/ndk/guides/ndk-stack>.",
+    )
+    parser.add_argument(
+        "-sym",
+        "--sym",
+        dest="symbol_dir",
+        required=True,  # TODO: default to '.'?
+        help="directory containing unstripped .so files",
+    )
+    parser.add_argument(
+        "-i",
+        "-dump",
+        "--dump",
+        dest="input",
+        default=sys.stdin,
+        type=argparse.FileType("r"),
+        help="input filename",
+    )
+    args = parser.parse_args(argv)
+
+    if not os.path.exists(args.symbol_dir):
+        sys.exit("{} does not exist!\n".format(args.symbol_dir))
+
+    symbolize_trace(args.input, args.symbol_dir)
 
 
 if __name__ == "__main__":
