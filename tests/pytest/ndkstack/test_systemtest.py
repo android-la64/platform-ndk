@@ -53,16 +53,15 @@ class SystemTests(unittest.TestCase):
             ],
             check=True,
             capture_output=True,
-            text=True,
         )
 
         # Read the expected output.
         file_name = os.path.join(symbol_dir, expected_file)
-        with open(file_name, "r", encoding="utf-8") as exp_file:
+        with open(file_name, "rb") as exp_file:
             expected = exp_file.read()
-        expected = expected.replace("SYMBOL_DIR", symbol_dir)
+        expected = expected.replace(b"SYMBOL_DIR", symbol_dir.encode("utf-8"))
         self.maxDiff = None
-        self.assertEqual(expected, proc.stdout)
+        self.assertEqual(expected.decode("utf-8"), proc.stdout.decode("utf-8"))
 
     def test_all_stacks(self) -> None:
         self.system_test("backtrace.txt", "expected.txt")
@@ -73,7 +72,6 @@ class SystemTests(unittest.TestCase):
     def test_hwasan(self) -> None:
         self.system_test("hwasan.txt", "expected_hwasan.txt")
 
-    @pytest.mark.xfail
     def test_invalid_unicode(self) -> None:
         with ndk.ext.subprocess.verbose_subprocess_errors():
             self.system_test(

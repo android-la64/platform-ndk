@@ -28,8 +28,8 @@ import subprocess
 import sys
 import tempfile
 import zipfile
-from pathlib import Path
-from typing import TextIO
+from pathlib import Path, PurePosixPath
+from typing import BinaryIO
 
 EXE_SUFFIX = ".exe" if os.name == "nt" else ""
 
@@ -119,7 +119,7 @@ def find_readelf(ndk_root: Path, ndk_bin: Path, ndk_host_tag: str) -> Path | Non
     return None
 
 
-def get_build_id(readelf_path: Path, elf_file: Path) -> str | None:
+def get_build_id(readelf_path: Path, elf_file: Path) -> bytes | None:
     """Get the GNU build id note from an elf file.
 
     Returns: The build id found or None if there is no build id or the
@@ -128,7 +128,7 @@ def get_build_id(readelf_path: Path, elf_file: Path) -> str | None:
 
     try:
         output = subprocess.check_output([str(readelf_path), "-n", str(elf_file)])
-        m = re.search(r"Build ID:\s+([0-9a-f]+)", output.decode())
+        m = re.search(rb"Build ID:\s+([0-9a-f]+)", output)
         if not m:
             return None
         return m.group(1)
@@ -196,38 +196,53 @@ class FrameInfo:
     # either Play is rewriting those (though I can't imagine why they'd be doing that),
     # or some OEM has altered the format of the crash output.
     # See https://github.com/android/ndk/issues/1898.
-    _line_re = re.compile(r".* +(#[0-9]+) +pc (?:0x)?([0-9a-f]+) +(([^ ]+).*)")
+    _line_re = re.compile(rb".* +(#[0-9]+) +pc (?:0x)?([0-9a-f]+) +(([^ ]+).*)")
     _sanitizer_line_re = re.compile(
-        r".* +(#[0-9]+) +0x[0-9a-f]* +\(([^ ]+)\+0x([0-9a-f]+)\)"
+        rb".* +(#[0-9]+) +0x[0-9a-f]* +\(([^ ]+)\+0x([0-9a-f]+)\)"
     )
     _lib_re = re.compile(r"([^\!]+)\!(.+)")
-    _offset_re = re.compile(r"\(offset\s+(0x[0-9a-f]+)\)")
-    _build_id_re = re.compile(r"\(BuildId:\s+([0-9a-f]+)\)")
+    _offset_re = re.compile(rb"\(offset\s+(0x[0-9a-f]+)\)")
+    _build_id_re = re.compile(rb"\(BuildId:\s+([0-9a-f]+)\)")
 
     @classmethod
-    def from_line(cls, line: str) -> FrameInfo | None:
+    def from_line(cls, line: bytes) -> FrameInfo | None:
         m = FrameInfo._line_re.match(line)
         if m:
             num, pc, tail, elf_file = m.group(1, 2, 3, 4)
-            return cls(num, pc, tail, elf_file)
+            # The path in the trace file comes from a POSIX system, so it can
+            # contain arbitrary bytes that are not valid UTF-8. If the user is
+            # on Windows it's impossible for us to handle those paths. This is
+            # an extremely unlikely circumstance. In any case, the fix on the
+            # user's side is "don't do that", so just attempt to decode UTF-8
+            # and let the exception be thrown if it isn't.
+            return cls(num, pc, tail, PurePosixPath(elf_file.decode("utf-8")))
         m = FrameInfo._sanitizer_line_re.match(line)
         if m:
             num, pc, tail, elf_file = m.group(1, 3, 2, 2)
-            return cls(num, pc, tail, elf_file, sanitizer=True)
+            return cls(
+                num, pc, tail, PurePosixPath(elf_file.decode("utf-8")), sanitizer=True
+            )
         return None
 
     def __init__(
-        self, num: str, pc: str, tail: str, elf_file: str, sanitizer: bool = False
+        self,
+        num: bytes,
+        pc: bytes,
+        tail: bytes,
+        elf_file: PurePosixPath,
+        sanitizer: bool = False,
     ) -> None:
         self.num = num
         self.pc = pc
         self.tail = tail
         self.elf_file = elf_file
         self.sanitizer = sanitizer
-        m = FrameInfo._lib_re.match(self.elf_file)
-        if m:
-            self.container_file = m.group(1)
-            self.elf_file = m.group(2)
+
+        if (library_match := FrameInfo._lib_re.match(str(self.elf_file))) is not None:
+            self.container_file: PurePosixPath | None = PurePosixPath(
+                library_match.group(1)
+            )
+            self.elf_file = PurePosixPath(library_match.group(2))
             # Sometimes an entry like this will occur:
             #   #01 pc 0000abcd  /system/lib/lib/libc.so!libc.so (offset 0x1000)
             # In this case, no container file should be set.
@@ -259,10 +274,22 @@ class FrameInfo:
             return False
         if readelf_path and self.build_id:
             build_id = get_build_id(readelf_path, elf_file_path)
+            if build_id is None:
+                print(
+                    f"ERROR: Could not determine build ID for {elf_file_path}",
+                    flush=True,
+                )
+                return False
             if self.build_id != build_id:
-                print("WARNING: Mismatched build id for %s" % (display_elf_path))
-                print("WARNING:   Expected %s" % (self.build_id))
-                print("WARNING:   Found    %s" % (build_id))
+                print(
+                    "WARNING: Mismatched build id for %s" % (display_elf_path),
+                    flush=True,
+                )
+                print(
+                    "WARNING:   Expected %s" % (self.build_id.decode("utf-8")),
+                    flush=True,
+                )
+                print("WARNING:   Found    %s" % (build_id.decode("utf-8")), flush=True)
                 return False
         return True
 
@@ -277,7 +304,7 @@ class FrameInfo:
                  tmp_dir.
         """
 
-        elf_file = os.path.basename(self.elf_file)
+        elf_file = self.elf_file.name
         if self.container_file:
             # This matches a file format such as Base.apk!libsomething.so
             # so see if we can find libsomething.so in the symbol directory.
@@ -285,9 +312,7 @@ class FrameInfo:
             if self.verify_elf_file(readelf_path, elf_file_path, str(elf_file_path)):
                 return elf_file_path
 
-            apk_file_path = os.path.join(
-                symbol_dir, os.path.basename(self.container_file)
-            )
+            apk_file_path = symbol_dir / self.container_file.name
             with zipfile.ZipFile(apk_file_path) as zip_file:
                 assert self.offset is not None
                 zip_info = get_zip_info_from_offset(zip_file, self.offset)
@@ -302,10 +327,10 @@ class FrameInfo:
                 ):
                     return None
                 return elf_file_path
-        elif elf_file[-4:] == ".apk":
+        elif self.elf_file.suffix == ".apk":
             # This matches a stack line such as:
             #   #08 pc 00cbed9c  GoogleCamera.apk (offset 0x6e32000)
-            apk_file_path = os.path.join(symbol_dir, elf_file)
+            apk_file_path = symbol_dir / elf_file
             with zipfile.ZipFile(apk_file_path) as zip_file:
                 assert self.offset is not None
                 zip_info = get_zip_info_from_offset(zip_file, self.offset)
@@ -316,13 +341,13 @@ class FrameInfo:
                 #   GoogleCamera.apk ...
                 # To:
                 #   GoogleCamera.apk!libsomething.so ...
-                index = self.tail.find(elf_file)
+                index = self.tail.find(elf_file.encode("utf-8"))
                 if index != -1:
                     index += len(elf_file)
                     self.tail = (
                         self.tail[0:index]
-                        + "!"
-                        + os.path.basename(zip_info.filename)
+                        + b"!"
+                        + bytes(zip_info.filename, encoding="utf-8")
                         + self.tail[index:]
                     )
                 elf_file = os.path.basename(zip_info.filename)
@@ -347,7 +372,7 @@ class FrameInfo:
         return None
 
 
-def symbolize_trace(trace_input: TextIO, symbol_dir: Path) -> None:
+def symbolize_trace(trace_input: BinaryIO, symbol_dir: Path) -> None:
     ndk_paths = get_ndk_paths()
     symbolize_cmd = [
         str(find_llvm_symbolizer(*ndk_paths)),
@@ -366,7 +391,7 @@ def symbolize_trace(trace_input: TextIO, symbol_dir: Path) -> None:
         )
         assert symbolize_proc.stdin is not None
         assert symbolize_proc.stdout is not None
-        banner = "*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***"
+        banner = b"*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***"
         in_crash = False
         saw_frame = False
         for line in trace_input:
@@ -376,19 +401,20 @@ def symbolize_trace(trace_input: TextIO, symbol_dir: Path) -> None:
                 if banner in line:
                     in_crash = True
                     saw_frame = False
-                    print("********** Crash dump: **********")
+                    print("********** Crash dump: **********", flush=True)
                 continue
 
-            for tag in ["Build fingerprint:", "Abort message:"]:
+            for tag in [b"Build fingerprint:", b"Abort message:"]:
                 if tag in line:
-                    print(line[line.find(tag) :])
+                    sys.stdout.buffer.write(line[line.find(tag) :])
+                    print(flush=True)
                     continue
 
             frame_info = FrameInfo.from_line(line)
             if not frame_info:
                 if saw_frame:
                     in_crash = False
-                    print("Crash dump is completed\n")
+                    print("Crash dump is completed\n", flush=True)
                 continue
 
             # There can be a gap between sanitizer frames in the abort message
@@ -407,20 +433,24 @@ def symbolize_trace(trace_input: TextIO, symbol_dir: Path) -> None:
             #      #00 pc 0007b350  /lib/bionic/libc.so (__strchr_chk+4)
             # becomes:
             #      #00 0x0007b350 /lib/bionic/libc.so (__strchr_chk+4)
-            out_line = "%s 0x%s %s" % (frame_info.num, frame_info.pc, frame_info.tail)
-            print(out_line)
-            indent = (out_line.find("(") + 1) * " "
+            out_line = b"%s 0x%s %s\n" % (
+                frame_info.num,
+                frame_info.pc,
+                frame_info.tail,
+            )
+            sys.stdout.buffer.write(out_line)
+            indent = (out_line.find(b"(") + 1) * b" "
             if not elf_file:
                 continue
-            value = '"%s" 0x%s\n' % (elf_file, frame_info.pc)
-            symbolize_proc.stdin.write(value.encode())
+            value = b'"%s" 0x%s\n' % (elf_file, frame_info.pc)
+            symbolize_proc.stdin.write(value)
             symbolize_proc.stdin.flush()
             while True:
                 symbolizer_output = symbolize_proc.stdout.readline().rstrip()
                 if not symbolizer_output:
                     break
                 # TODO: rewrite file names base on a source path?
-                print("%s%s" % (indent, symbolizer_output.decode()))
+                sys.stdout.buffer.write(b"%s%s\n" % (indent, symbolizer_output))
     finally:
         trace_input.close()
         tmp_dir.delete()
@@ -452,8 +482,8 @@ def main(argv: list[str] | None = None) -> None:
         "-dump",
         "--dump",
         dest="input",
-        default=sys.stdin,
-        type=argparse.FileType("r"),
+        default=sys.stdin.buffer,
+        type=argparse.FileType("rb"),
         help="input filename",
     )
     args = parser.parse_args(argv)
