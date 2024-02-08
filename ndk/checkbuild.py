@@ -1921,11 +1921,21 @@ class SourceProperties(ndk.builds.Module):
         version = get_version_string(self.context.build_number)
         if ndk.config.beta > 0:
             version += "-beta{}".format(ndk.config.beta)
+
+        # This file is read by the release tooling to populate the SDK manifest. Some of
+        # these properties (Pkg.Desc and Pkg.Revision) will populate fields that the SDK
+        # manager UI in Android Studio will use as the display name and categorization,
+        # so the formats of those should not change.
+        #
+        # The rest is up to us. We can add new fields that can be used in the release
+        # configs. Pkg.ReleaseName, for example, is used to populate that portion of the
+        # name of the zip file produced by the release.
         path.write_text(
             textwrap.dedent(
                 f"""\
                 Pkg.Desc = Android NDK
                 Pkg.Revision = {version}
+                Pkg.ReleaseName = {ndk.config.release}
                 """
             )
         )
