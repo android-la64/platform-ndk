@@ -23,7 +23,7 @@ directly, see the [build system maintainers guide].
 
 ## r26c
 
-* Updated LLVM to clang-r487747d. See `AndroidVersion.txt` and
+* Updated LLVM to clang-r487747e. See `AndroidVersion.txt` and
   `clang_source_info.md` in the toolchain directory for version information.
   * [Issue 1928]: Fixed Clang crash in instruction selection for 32-bit armv8
     floating point.
