@@ -100,6 +100,7 @@ ignore-imports = true
 # ndkstack or ndkgdb...) to sys.path, so `import ndkstack` finds the test
 # package rather than the module under test.
 addopts = "--import-mode=importlib"
+xfail_strict = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
