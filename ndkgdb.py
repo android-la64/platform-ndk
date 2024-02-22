@@ -201,7 +201,7 @@ def extract_launchable(xmlroot: Element) -> list[str]:
 
 
 def ndk_bin_path() -> str:
-    return os.path.dirname(os.path.realpath(__file__))
+    return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
 
 def handle_args() -> argparse.Namespace:
