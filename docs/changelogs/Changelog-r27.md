@@ -33,11 +33,13 @@ directly, see the [build system maintainers guide].
 * [Issue 1974]: Unintentionally shipped Vulkan headers have been removed from
   `sources/third_party/vulkan`. The standard Vulkan headers are included in the
   Android sysroot, which Clang will find automatically.
+* [Issue 1993]: ndk-stack now tolerates invalid UTF-8 characters in the trace.
 
 [Issue 1856]: https://github.com/android/ndk/issues/1856
 [Issue 1898]: https://github.com/android/ndk/issues/1898
 [Issue 1921]: https://github.com/android/ndk/issues/1921
 [Issue 1974]: https://github.com/android/ndk/issues/1974
+[Issue 1993]: https://github.com/android/ndk/issues/1993
 
 
 ## Known Issues
