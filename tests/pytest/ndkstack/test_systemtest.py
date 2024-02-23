@@ -20,8 +20,6 @@ import os.path
 import subprocess
 import unittest
 
-import pytest
-
 import ndk.ext.subprocess
 import ndk.paths
 import ndk.toolchains
