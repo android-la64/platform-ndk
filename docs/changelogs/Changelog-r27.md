@@ -15,8 +15,8 @@ directly, see the [build system maintainers guide].
 
 ## Changes
 
-* Updated LLVM to clang-r498229b. See `AndroidVersion.txt` and
-  `clang_source_info.md` in the toolchain directory for version information.
+* Updated LLVM to clang-r498229b. See `clang_source_info.md` in the toolchain
+  directory for version information.
 * A RISC-V sysroot (AKA riscv64, or rv64) has been added. It is **not**
   supported. It is present to aid bringup for OS vendors, but it's not yet a
   supported Android ABI. It will not be built by default.
