@@ -21,6 +21,13 @@ directly, see the [build system maintainers guide].
 
 [Issue 1751]: https://github.com/android/ndk/issues/1751
 
+## r26d
+
+* [Issue 1994]: Fixed ndk-gdb/ndk-lldb to use the correct path for
+  make and other tools.
+
+[Issue 1994]: https://github.com/android/ndk/issues/1994
+
 ## r26c
 
 * Updated LLVM to clang-r487747e. See `AndroidVersion.txt` and
