@@ -25,6 +25,7 @@ import posixpath
 import signal
 import subprocess
 import sys
+import textwrap
 import time
 from collections.abc import Iterator
 from typing import NoReturn
@@ -808,10 +809,29 @@ def start_jdb(argv_subset: list[str]) -> None:
         log("error: did not find magic string in JDB output.")
 
 
+def advise_apk_debugging() -> None:
+    print("**Android Studio's debugger can be used for non-Studio projects.**")
+    print("See https://developer.android.com/studio/debug/apk-debugger")
+    print()
+    print(
+        textwrap.dedent(
+            """\
+            ndk-lldb is still usable for debugging command line Android tools or
+            ANT-based app builds, but it was never meant to handle other use
+            cases. Android Studio can debug your APK even if Android Studio
+            wasn't used to build the project, and this will be *much* easier
+            than using ndk-lldb in most circumstances.
+            """
+        )
+    )
+
+
 def main() -> None:
     if sys.argv[1:2] == ["--internal-wakeup-pid-with-jdb"]:
         start_jdb(sys.argv[2:])
         return
+
+    advise_apk_debugging()
 
     args = handle_args()
     device = args.device
