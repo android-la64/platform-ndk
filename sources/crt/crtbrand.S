@@ -27,7 +27,7 @@
  */
 
   .section .note.android.ident,"a",%note
-  .align 2
+  .balign 4
   .type note_android_ident, %object
 note_android_ident:
   .long note_data-note_name  // int32_t n_namesz
