@@ -16,14 +16,13 @@
 """Tools for verifying the presence or absence of flags in builds."""
 from __future__ import annotations
 
-import shutil
 import subprocess
 from pathlib import Path
 from typing import Optional
 
-import ndk.paths
-from ndk.hosts import Host
-from ndk.test.spec import BuildConfiguration, CMakeToolchainFile
+from ndk.test.spec import BuildConfiguration
+
+from .builders import CMakeBuilder, NdkBuildBuilder
 
 
 class FlagVerifierResult:
@@ -77,10 +76,7 @@ class FlagVerifier:
         self.ndk_path = ndk_path
         self.abi = config.abi
         self.api = config.api
-        if config.toolchain_file is CMakeToolchainFile.Legacy:
-            self.toolchain_mode = "ON"
-        else:
-            self.toolchain_mode = "OFF"
+        self.toolchain_mode = config.toolchain_file
         self.expected_flags: list[str] = []
         self.not_expected_flags: list[str] = []
         self.ndk_build_flags: list[str] = []
@@ -124,18 +120,8 @@ class FlagVerifier:
             raise ValueError(f"Flag {flag} both expected and not expected")
         self.not_expected_flags.append(flag)
 
-    def _check_build(self, cmd: list[str]) -> FlagVerifierResult:
-        result = subprocess.run(
-            cmd,
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            encoding="utf-8",
-        )
-        if result.returncode != 0:
-            return FlagVerifierFailure(result.stdout)
-
-        words = result.stdout.split(" ")
+    def _check_output(self, output: str) -> FlagVerifierResult:
+        words = output.split(" ")
         missing_flags: list[str] = []
         wrong_flags: list[str] = []
         for expected in self.expected_flags:
@@ -148,13 +134,13 @@ class FlagVerifier:
             return FlagVerifierFailure(
                 "Expected flags were not present in the build output: "
                 + ", ".join(missing_flags)
-                + f"\n{result.stdout}"
+                + f"\n{output}"
             )
         if wrong_flags:
             return FlagVerifierFailure(
                 "Unexpected flags were present in the build output: "
                 + ", ".join(wrong_flags)
-                + f"\n{result.stdout}"
+                + f"\n{output}"
             )
         return FlagVerifierSuccess()
 
@@ -175,21 +161,15 @@ class FlagVerifier:
         Returns:
             A FlagVerifierResult object describing the verification result.
         """
-        ndk_build = self.ndk_path / "ndk-build"
-        if Host.current() == Host.Windows64:
-            ndk_build = ndk_build.with_suffix(".cmd")
-        return self._check_build(
-            [
-                str(ndk_build),
-                "-C",
-                str(self.project),
-                "-B",
-                "V=1",
-                f"APP_ABI={self.abi}",
-                f"APP_PLATFORM=android-{self.api}",
-            ]
-            + self.ndk_build_flags
-        )
+        try:
+            assert self.api is not None
+            output = NdkBuildBuilder(
+                self.project, self.ndk_path, self.abi, self.api, self.ndk_build_flags
+            ).build()
+        except subprocess.CalledProcessError as ex:
+            return FlagVerifierFailure(ex.stdout)
+
+        return self._check_output(output)
 
     def verify_cmake(self) -> FlagVerifierResult:
         """Verifies that CMake behaves as specified.
@@ -197,42 +177,17 @@ class FlagVerifier:
         Returns:
             A FlagVerifierResult object describing the verification result.
         """
-        host = Host.current()
-        if host == Host.Windows64:
-            tag = "windows-x86"
-        else:
-            tag = f"{host.value}-x86"
-        cmake = ndk.paths.ANDROID_DIR / f"prebuilts/cmake/{tag}/bin/cmake"
-        ninja = ndk.paths.ANDROID_DIR / f"prebuilts/ninja/{tag}/ninja"
-        if host == Host.Windows64:
-            cmake = cmake.with_suffix(".exe")
-            ninja = ninja.with_suffix(".exe")
-        # PythonBuildTest ensures that we're cd'd into the test out directory.
-        build_dir = Path("build")
-        if build_dir.exists():
-            shutil.rmtree(build_dir)
-        build_dir.mkdir(parents=True)
-        toolchain_file = self.ndk_path / "build/cmake/android.toolchain.cmake"
-        cmd = [
-            str(cmake),
-            "-S",
-            str(self.project),
-            "-B",
-            str(build_dir),
-            f"-DCMAKE_TOOLCHAIN_FILE={toolchain_file}",
-            f"-DANDROID_ABI={self.abi}",
-            f"-DANDROID_PLATFORM=android-{self.api}",
-            f"-DANDROID_USE_LEGACY_TOOLCHAIN_FILE={self.toolchain_mode}",
-            "-GNinja",
-            f"-DCMAKE_MAKE_PROGRAM={ninja}",
-        ] + self.cmake_flags
-        result = subprocess.run(
-            cmd,
-            check=False,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            encoding="utf-8",
-        )
-        if result.returncode != 0:
-            return FlagVerifierFailure(result.stdout)
-        return self._check_build([str(ninja), "-C", str(build_dir), "-v"])
+        try:
+            assert self.api is not None
+            output = CMakeBuilder(
+                self.project,
+                self.ndk_path,
+                self.abi,
+                self.api,
+                self.toolchain_mode,
+                self.cmake_flags,
+            ).build()
+        except subprocess.CalledProcessError as ex:
+            return FlagVerifierFailure(ex.stdout)
+
+        return self._check_output(output)
