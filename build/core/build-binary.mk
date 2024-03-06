@@ -132,6 +132,10 @@ LOCAL_OBJECTS :=
 #
 LOCAL_CFLAGS := -DANDROID $(LOCAL_CFLAGS)
 
+ifeq ($(APP_SUPPORT_FLEXIBLE_PAGE_SIZES),true)
+  LOCAL_CFLAGS += -D__BIONIC_NO_PAGE_SIZE_MACRO
+endif
+
 #
 # Add the default system shared libraries to the build
 #
