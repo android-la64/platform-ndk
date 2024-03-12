@@ -50,9 +50,11 @@ def make_bztar(base_name: Path, root_dir: Path, base_dir: Path) -> None:
         subprocess.check_call(
             [
                 "tar",
-                "-j"
-                if shutil.which("pbzip2") is None
-                else "--use-compress-prog=pbzip2",
+                (
+                    "-j"
+                    if shutil.which("pbzip2") is None
+                    else "--use-compress-prog=pbzip2"
+                ),
                 "-cf",
                 str(base_name.with_suffix(".tar.bz2")),
                 "-C",

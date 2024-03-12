@@ -326,9 +326,9 @@ class DeviceFleet:
 
             # Anything is better than nothing.
             if current_group is None:
-                self.devices[device.version][
-                    abi
-                ] = DeviceShardingGroup.with_first_device(device)
+                self.devices[device.version][abi] = (
+                    DeviceShardingGroup.with_first_device(device)
+                )
                 continue
 
             if current_group.device_matches(device):
@@ -338,22 +338,22 @@ class DeviceFleet:
             # The emulator images have actually been changed over time, so the
             # devices are more trustworthy.
             if current_group.is_emulator and not device.is_emulator:
-                self.devices[device.version][
-                    abi
-                ] = DeviceShardingGroup.with_first_device(device)
+                self.devices[device.version][abi] = (
+                    DeviceShardingGroup.with_first_device(device)
+                )
 
             # Trust release builds over pre-release builds, but don't block
             # pre-release because sometimes that's all there is.
             if not current_group.is_release and device.is_release:
-                self.devices[device.version][
-                    abi
-                ] = DeviceShardingGroup.with_first_device(device)
+                self.devices[device.version][abi] = (
+                    DeviceShardingGroup.with_first_device(device)
+                )
 
             # If we have a device that supports MTE, prefer that.
             if not current_group.supports_mte and device.supports_mte:
-                self.devices[device.version][
-                    abi
-                ] = DeviceShardingGroup.with_first_device(device)
+                self.devices[device.version][abi] = (
+                    DeviceShardingGroup.with_first_device(device)
+                )
 
     def get_unique_device_groups(self) -> Set[DeviceShardingGroup]:
         groups = set()

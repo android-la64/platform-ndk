@@ -388,13 +388,11 @@ class BasicWorker:
 
 class BaseWorkQueue(ABC, Generic[ResultT]):
     @abstractmethod
-    def get_result(self) -> ResultT:
-        ...
+    def get_result(self) -> ResultT: ...
 
     @property
     @abstractmethod
-    def has_pending_results(self) -> bool:
-        ...
+    def has_pending_results(self) -> bool: ...
 
     def get_results(self) -> list[ResultT]:
         """Gets all pending results.
