@@ -437,15 +437,6 @@ def parse_args() -> argparse.Namespace:
             raise argparse.ArgumentTypeError("{} is not a file".format(path))
         return expanded_path.resolve(strict=True)
 
-    parser.add_argument(
-        "--permissive-python-environment",
-        action="store_true",
-        help=(
-            "Disable strict Python path checking. This allows using a non-prebuilt "
-            "Python when one is not available."
-        ),
-    )
-
     config_options = parser.add_argument_group("Test Configuration Options")
     config_options.add_argument(
         "--filter", help="Only run tests that match the given pattern."
@@ -782,7 +773,7 @@ def run_tests(args: argparse.Namespace) -> Results:
 def main() -> None:
     args = parse_args()
 
-    ensure_python_environment(args.permissive_python_environment)
+    ensure_python_environment()
 
     log_levels = [logging.WARNING, logging.INFO, logging.DEBUG]
     verbosity = min(args.verbose, len(log_levels) - 1)
