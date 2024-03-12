@@ -327,9 +327,9 @@ def build_ndk_tests(out_dir: Path, dist_dir: Path, args: argparse.Namespace) -> 
         ndk_dir,
         test_out_dir,
         clean=True,
-        package_path=Path(dist_dir).joinpath("ndk-tests")
-        if args.package_tests
-        else None,
+        package_path=(
+            Path(dist_dir).joinpath("ndk-tests") if args.package_tests else None
+        ),
     )
 
     printer = ndk.test.printers.StdoutPrinter()

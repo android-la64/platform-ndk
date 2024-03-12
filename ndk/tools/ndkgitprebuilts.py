@@ -89,12 +89,10 @@ async def run_shell(cmd: str, cwd: Path | None = None) -> None:
 
 class NdkSource(ABC):
     @abstractmethod
-    def commit_summary(self) -> str:
-        ...
+    def commit_summary(self) -> str: ...
 
     @abstractmethod
-    async def download_zip(self, destination: Path) -> None:
-        ...
+    async def download_zip(self, destination: Path) -> None: ...
 
     @abstractmethod
     def infer_major_version(self) -> int | None:
