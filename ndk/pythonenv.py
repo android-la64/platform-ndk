@@ -35,27 +35,6 @@ def python_path() -> Path:
     return ANDROID_DIR / "prebuilts/python/windows-x86/python.exe"
 
 
-def check_python_is_prebuilt() -> None:
-    interp = Path(sys.executable).resolve()
-    if Host.current() is Host.Windows64 and shutil.which("poetry") is not None:
-        # Poetry doesn't use symlinks on Windows since those are not generally
-        # available, so we can't easily verify that the Python in a Poetry environment
-        # actually is the one from prebuilts. We still want to verify this when we're
-        # running on a machine without Poetry because that's probably a build server.
-        return
-    if Host.current() is Host.Darwin and shutil.which("poetry") is not None:
-        # On macOS the prebuilt python can't be used for the poetry environment because
-        # our python doesn't have support for the ssl module, and for whatever reason
-        # that's consistently required on macOS but not on other platforms.
-        return
-    prebuilt = python_path()
-    if interp != prebuilt:
-        sys.exit(
-            f"Expected python to be {prebuilt}, but is {sys.executable} ({interp}).\n\n"
-            f"Follow {PYTHON_DOCS} to set up your Python environment."
-        )
-
-
 def ensure_poetry_if_available() -> None:
     if shutil.which("poetry") is None:
         return
@@ -78,9 +57,7 @@ def purge_user_site_packages() -> None:
         sys.path = [p for p in sys.path if p != site.getusersitepackages()]
 
 
-def ensure_python_environment(permissive_path: bool) -> None:
+def ensure_python_environment() -> None:
     """Verifies that the current Python environment is what we expect."""
-    if not permissive_path:
-        check_python_is_prebuilt()
     ensure_poetry_if_available()
     purge_user_site_packages()
