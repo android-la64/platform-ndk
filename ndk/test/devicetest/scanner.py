@@ -18,10 +18,9 @@ import os
 from pathlib import Path, PurePosixPath
 from typing import Callable, Dict, List
 
-import ndk.test.builder
 from ndk.test.devicetest.case import BasicTestCase, TestCase
 from ndk.test.filters import TestFilter
-from ndk.test.spec import BuildConfiguration
+from ndk.test.spec import BuildConfiguration, TestSpec
 
 
 def logger() -> logging.Logger:
@@ -78,7 +77,7 @@ def _enumerate_basic_tests(
 
 
 class ConfigFilter:
-    def __init__(self, test_spec: ndk.test.spec.TestSpec) -> None:
+    def __init__(self, test_spec: TestSpec) -> None:
         self.spec = test_spec
 
     def filter(self, build_config: BuildConfiguration) -> bool:
