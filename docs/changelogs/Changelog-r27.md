@@ -15,8 +15,13 @@ directly, see the [build system maintainers guide].
 
 ## Changes
 
-* Updated LLVM to clang-r498229b. See `clang_source_info.md` in the toolchain
+* Updated LLVM to clang-r522817. See `clang_source_info.md` in the toolchain
   directory for version information.
+  * [Issue 1728]: Clang now emits an error for invalid Android target versions.
+  * [Issue 1853]: `clang-scan-deps` is now included.
+  * [Issue 1947]: Fixed various function multi-versioning crashes.
+  * [Issue 1963]: Fixed undefined behavior in `std::unexpected::has_value()`.
+  * [Issue 1988]: Added aarch64 support for `preserve_all` calling convention.
 * A RISC-V sysroot (AKA riscv64, or rv64) has been added. It is **not**
   supported. It is present to aid bringup for OS vendors, but it's not yet a
   supported Android ABI. It will not be built by default.
@@ -37,10 +42,15 @@ directly, see the [build system maintainers guide].
 * [Issue 1994]: Fixed ndk-gdb/ndk-lldb to use the correct path for
   make and other tools.
 
+[Issue 1728]: https://github.com/android/ndk/issues/1728
+[Issue 1853]: https://github.com/android/ndk/issues/1853
 [Issue 1856]: https://github.com/android/ndk/issues/1856
 [Issue 1898]: https://github.com/android/ndk/issues/1898
 [Issue 1921]: https://github.com/android/ndk/issues/1921
+[Issue 1947]: https://github.com/android/ndk/issues/1947
+[Issue 1963]: https://github.com/android/ndk/issues/1963
 [Issue 1974]: https://github.com/android/ndk/issues/1974
+[Issue 1988]: https://github.com/android/ndk/issues/1988
 [Issue 1993]: https://github.com/android/ndk/issues/1993
 [Issue 1994]: https://github.com/android/ndk/issues/1994
 
