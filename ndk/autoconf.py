@@ -16,8 +16,8 @@
 """APIs for dealing with autoconf scripts."""
 import multiprocessing
 import os
-import pipes
 import pprint
+import shlex
 import shutil
 import subprocess
 from pathlib import Path
@@ -120,7 +120,7 @@ class AutoconfBuilder:
             paths.append(os.environ["PATH"])
             env["PATH"] = os.pathsep.join(paths)
 
-        pp_cmd = " ".join([pipes.quote(arg) for arg in cmd])
+        pp_cmd = " ".join([shlex.quote(arg) for arg in cmd])
         subproc_env = dict(os.environ)
         if env:
             subproc_env.update(env)

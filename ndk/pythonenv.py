@@ -18,21 +18,8 @@ import shutil
 import site
 import sys
 import textwrap
-from pathlib import Path
-
-from .hosts import Host
-from .paths import ANDROID_DIR
 
 PYTHON_DOCS = "https://android.googlesource.com/platform/ndk/+/master/docs/Building.md#python-environment-setup"
-
-
-def python_path() -> Path:
-    """Returns the absolute path to the Python executable for this OS."""
-    if Host.current() is Host.Linux:
-        return ANDROID_DIR / "prebuilts/python/linux-x86/bin/python3.10"
-    if Host.current() is Host.Darwin:
-        return ANDROID_DIR / "prebuilts/python/darwin-x86/bin/python3.10"
-    return ANDROID_DIR / "prebuilts/python/windows-x86/python.exe"
 
 
 def ensure_poetry_if_available() -> None:
