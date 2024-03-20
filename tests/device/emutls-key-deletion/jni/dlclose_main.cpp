@@ -12,6 +12,10 @@
 int main() {
   std::thread([] {
     void* solib = dlopen("libndktest.so", RTLD_NOW);
+    if (!solib) {
+      fprintf(stderr, "can't find libndktest.so (%s)\n", dlerror());
+      abort();
+    }
     void (*test_func)() = (void(*)())dlsym(solib, "test_func");
     if (!test_func) {
       fprintf(stderr, "can't find test_func func (%s)\n", dlerror());
