@@ -22,7 +22,6 @@ from __future__ import annotations
 import shutil
 import stat
 import subprocess
-import sys
 import textwrap
 import zipapp
 from enum import Enum, auto, unique
@@ -518,7 +517,7 @@ class PythonApplication(Module):
     """
 
     package: Path
-    pip_dependencies: list[Path] = []
+    py_pkg_deps: list[Path] = []
     copy_to_python_path: list[Path] = []
     main: str
 
@@ -539,24 +538,23 @@ class PythonApplication(Module):
             else:
                 shutil.copytree(path, self._staging / path.name)
 
-        if self.pip_dependencies:
-            # Apparently pip doesn't want us to use it as a library.
-            # https://pip.pypa.io/en/latest/user_guide/#using-pip-from-your-program
-            subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    # Do not allow pip to check PyPI.
-                    "--no-deps",
-                    "--no-index",
-                    "--target",
-                    self._staging,
-                    *self.pip_dependencies,
-                ],
-                check=True,
-            )
+        # Ideally this would be `pip install` (and it once was), but new
+        # versions of pip don't support installing source packages without the
+        # `wheel` package (https://github.com/pypa/pip/issues/8368). `wheel`
+        # isn't part of the stdlib, and we can't fetch it from PyPI in CI, so we
+        # can't use pip to install it any more.
+        #
+        # The risk is that we can't account for any quirks of the package. This
+        # works for trivial packages, but anything with a complicated build
+        # would not be installed correctly. We might detect too many or too few
+        # sources, install packages to the wrong path, miss data files, etc.
+        #
+        # We might  be able to instead run the package's `setup.py install`
+        # directly, but that only works if the packages stick with setup.py and
+        # don't migrate to pyproject.toml, and I don't want to become a blocker
+        # for that.
+        for pkg_src in self.py_pkg_deps:
+            shutil.copytree(pkg_src, self._staging / pkg_src.name)
 
         zipapp.create_archive(
             source=self._staging,
