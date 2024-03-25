@@ -13,6 +13,20 @@ directly, see the [build system maintainers guide].
 
 ## Announcements
 
+* Android V will allow OEMs to ship arm64-v8a and x86_64 devices with 16KiB page
+  sizes. Devices that use this configuration will not be able to run existing
+  apps that use native code. To be compatible with these devices, applications
+  will need to rebuild all their native code to be 16KiB aligned, and rewrite
+  any code which assumes a specific page size. ndk-build and CMake have options
+  to enable this mode (see note about `APP_SUPPORT_FLEXIBLE_PAGE_SIZES` and
+  `ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES` below). A future version of the NDK will
+  enable this mode by default. If you're using or maintaining a third-party
+  build system, consult the [build system maintainers guide] for instructions.
+
+  See [Support 16 KB page sizes] for more information.
+
+[Support 16 KB page sizes]: https://developer.android.com/guide/practices/page-sizes
+
 ## Changes
 
 * Updated LLVM to clang-r522817. See `clang_source_info.md` in the toolchain
@@ -41,6 +55,14 @@ directly, see the [build system maintainers guide].
 * [Issue 1993]: ndk-stack now tolerates invalid UTF-8 characters in the trace.
 * [Issue 1994]: Fixed ndk-gdb/ndk-lldb to use the correct path for
   make and other tools.
+* Added `APP_SUPPORT_FLEXIBLE_PAGE_SIZES` for ndk-build and
+  `ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES` for CMake. Set to
+  `APP_SUPPORT_FLEXIBLE_PAGE_SIZES := true` in your `Application.mk` or pass
+  `-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON` to CMake (via
+  `android.defaultConfig.externalNativeBuild.cmake.arguments` if you're using
+  the Android Gradle Plugin) to build your code to be compatible with devices
+  that use a 16KiB page size. Third-party build system users and maintainers
+  should consult the [build system maintainers guide].
 
 [Issue 1728]: https://github.com/android/ndk/issues/1728
 [Issue 1853]: https://github.com/android/ndk/issues/1853
