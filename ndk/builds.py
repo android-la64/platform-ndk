@@ -548,6 +548,9 @@ class PythonApplication(Module):
                     "-m",
                     "pip",
                     "install",
+                    # Do not allow pip to check PyPI.
+                    "--no-deps",
+                    "--no-index",
                     "--target",
                     self._staging,
                     *self.pip_dependencies,
