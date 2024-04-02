@@ -154,6 +154,37 @@ releases should not be shipped to production. Consult
 [uses-sdk]: https://developer.android.com/guide/topics/manifest/uses-sdk-element
 [weak symbols]: #weak-symbols-for-api-definitions
 
+### Page sizes
+
+Android V will allow OEMs to ship arm64-v8a and x86_64 devices with 16KiB page
+sizes. Devices that use this configuration will not be able to run existing apps
+that use native code. To be compatible with these devices, applications will
+need to rebuild all their native code to be 16KiB aligned, and rewrite any code
+which assumes a specific page size. See [Support 16 KB page sizes] for details.
+
+Note: 16KiB compatible binaries are also compatible with 4KiB page devices. You
+do not need to build both 16KiB and 4KiB variants of your libraries.
+
+To minimize disruption, the default configuration for NDK r27 remains 4KiB page
+sizes. A future NDK (likely r28) will change the defaults. To support building
+16KiB compatible apps in your build system, do the following:
+
+1. When linking arm64-v8a or x86_64 code, set the linker's max-page-size to
+   16384: `-Wl,-z,max-page-size=16384`. This will increase the size of the
+   binaries.
+2. Define `__BIONIC_NO_PAGE_SIZE_MACRO` to configure libc to hide the
+   declaration of `PAGE_SIZE` from the build: `-D__BIONIC_NO_PAGE_SIZE_MACRO`.
+   There is no valid build-time constant for the page size in a world where
+   devices have varying page sizes. Runtime checks with `getpagesize()` are
+   required.
+
+Note that, for the time being, this only needs to be done for arm64-v8a. The
+x86_64 emulator (see [Support 16 KB page sizes] for details) will support larger
+page sizes for testing purposes, but there are no plans to change the page size
+for the 32-bit ABIs, and riscv64 does not support 16KiB page sizes at all.
+
+[Support 16 KB page sizes]: https://developer.android.com/guide/practices/page-sizes
+
 ## Clang
 
 Clang is installed to `<NDK>/toolchains/llvm/prebuilt/<host-tag>/bin/clang`.

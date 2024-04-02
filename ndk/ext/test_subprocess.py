@@ -33,7 +33,7 @@ class TestVerboseSubprocessErrors:
         assert (
             textwrap.dedent(
                 """\
-                ndk.ext.subprocess.VerboseCalledProcessError: Command '['test']' returned non-zero exit status 1.
+                subprocess.CalledProcessError: Command '['test']' returned non-zero exit status 1.
                 stdout:
                 foo
                 stderr:
@@ -50,7 +50,7 @@ class TestVerboseSubprocessErrors:
         assert (
             textwrap.dedent(
                 """\
-                ndk.ext.subprocess.VerboseCalledProcessError: Command '['test']' returned non-zero exit status 1.
+                subprocess.CalledProcessError: Command '['test']' returned non-zero exit status 1.
                 stdout:
                 foo
                 """
@@ -65,7 +65,7 @@ class TestVerboseSubprocessErrors:
         assert (
             textwrap.dedent(
                 """\
-                ndk.ext.subprocess.VerboseCalledProcessError: Command '['test']' returned non-zero exit status 1.
+                subprocess.CalledProcessError: Command '['test']' returned non-zero exit status 1.
                 stderr:
                 bar
                 """
@@ -80,7 +80,7 @@ class TestVerboseSubprocessErrors:
         assert (
             textwrap.dedent(
                 """\
-                ndk.ext.subprocess.VerboseCalledProcessError: Command '['test']' returned non-zero exit status 1.
+                subprocess.CalledProcessError: Command '['test']' returned non-zero exit status 1.
                 """
             )
             == "".join(traceback.format_exception_only(excinfo.value))

@@ -1690,9 +1690,9 @@ class NdkGdb(ndk.builds.PythonApplication):
     notice = NDK_DIR / "NOTICE"
     package = NDK_DIR / "ndkgdb.py"
     main = "ndkgdb:main"
-    pip_dependencies = [
-        ANDROID_DIR / "development/python-packages/adb",
-        ANDROID_DIR / "development/python-packages/gdbrunner",
+    py_pkg_deps = [
+        ANDROID_DIR / "development/python-packages/adb/adb",
+        ANDROID_DIR / "development/python-packages/gdbrunner/gdbrunner",
     ]
     deps = {"ndk-gdb-shortcut", "ndk-lldb-shortcut"}
 
