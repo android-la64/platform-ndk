@@ -100,16 +100,13 @@ apply to the directory it is run in, so you will need to do it per NDK tree.
 ```
 # From the //ndk directory of your NDK tree:
 $ ../prebuilts/python/darwin-x86/bin/python3 --version
-Python 3.10.3
+Python 3.11.4
 # We don't need to match the version exactly, just the major/minor version.
-$ pyenv install 3.10:latest
-$ pyenv versions
-# pyenv will list the available Python versions. Use the latest version that
-# matches the prebuilt. In my case that's 3.10.6.
-$ pyenv local 3.10.6
+$ pyenv install 3.11:latest
+$ pyenv local 3.11
 $ python --version
-Python 3.10.6
-$ poetry env use 3.10
+Python 3.11.8
+$ poetry env use 3.11
 poetry install
 ```
 
