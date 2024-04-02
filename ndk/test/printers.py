@@ -77,7 +77,6 @@ class FilePrinter(Printer):
         )
 
     def print_summary(self, report: Report[Any]) -> None:
-        print(file=self.file)
         if not report.num_tests:
             print(
                 ndk.termcolor.maybe_color(
@@ -91,8 +90,6 @@ class FilePrinter(Printer):
             )
             return
 
-        formatted = format_stats_str(report, self.result_translations, self.use_color)
-        print(formatted, file=self.file)
         for suite, suite_report in report.by_suite().items():
             stats_str = format_stats_str(
                 suite_report, self.result_translations, self.use_color
@@ -107,6 +104,9 @@ class FilePrinter(Printer):
                         ),
                         file=self.file,
                     )
+
+        formatted = format_stats_str(report, self.result_translations, self.use_color)
+        print(f"\nTotal: {formatted}", file=self.file)
 
 
 class StdoutPrinter(FilePrinter):
