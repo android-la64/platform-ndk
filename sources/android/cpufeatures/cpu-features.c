@@ -31,41 +31,6 @@
  * migrate to https://github.com/google/cpu_features.
  */
 
-/* ChangeLog for this library:
- *
- * NDK r10e?: Add MIPS MSA feature.
- *
- * NDK r10: Support for 64-bit CPUs (Intel, ARM & MIPS).
- *
- * NDK r8d: Add android_setCpu().
- *
- * NDK r8c: Add new ARM CPU features: VFPv2, VFP_D32, VFP_FP16,
- *          VFP_FMA, NEON_FMA, IDIV_ARM, IDIV_THUMB2 and iWMMXt.
- *
- *          Rewrite the code to parse /proc/self/auxv instead of
- *          the "Features" field in /proc/cpuinfo.
- *
- *          Dynamically allocate the buffer that hold the content
- *          of /proc/cpuinfo to deal with newer hardware.
- *
- * NDK r7c: Fix CPU count computation. The old method only reported the
- *           number of _active_ CPUs when the library was initialized,
- *           which could be less than the real total.
- *
- * NDK r5: Handle buggy kernels which report a CPU Architecture number of 7
- *         for an ARMv6 CPU (see below).
- *
- *         Handle kernels that only report 'neon', and not 'vfpv3'
- *         (VFPv3 is mandated by the ARM architecture is Neon is implemented)
- *
- *         Handle kernels that only report 'vfpv3d16', and not 'vfpv3'
- *
- *         Fix x86 compilation. Report ANDROID_CPU_FAMILY_X86 in
- *         android_getCpuFamily().
- *
- * NDK r4: Initial release
- */
-
 #include "cpu-features.h"
 
 #include <dlfcn.h>
@@ -619,6 +584,8 @@ android_cpuInitFamily(void)
     g_cpuFamily = ANDROID_CPU_FAMILY_ARM64;
 #elif defined(__x86_64__)
     g_cpuFamily = ANDROID_CPU_FAMILY_X86_64;
+#elif defined(__riscv) && __riscv_xlen == 64
+    g_cpuFamily = ANDROID_CPU_FAMILY_RISCV64;
 #else
     g_cpuFamily = ANDROID_CPU_FAMILY_UNKNOWN;
 #endif

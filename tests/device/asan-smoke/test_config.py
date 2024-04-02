@@ -12,6 +12,8 @@ def run_unsupported(test: TestCase, device: Device) -> Optional[str]:
         # ASAN is flaky with 28 x86_64. It still works with 32-bit or with
         # older platforms.
         return "ASAN is flaky on 28 x86_64 (http://b/37130178)"
+    if test.config.abi == "riscv64":
+        return "ASAN is unsupported on riscv64"
     return None
 
 
