@@ -26,22 +26,6 @@ from typing import Any, Sequence, Tuple
 # TODO: Remove in favor of subprocess.run.
 
 
-class VerboseCalledProcessError(subprocess.CalledProcessError):
-    @staticmethod
-    def from_calledprocesserror(
-        ex: subprocess.CalledProcessError,
-    ) -> VerboseCalledProcessError:
-        return VerboseCalledProcessError(ex.returncode, ex.cmd, ex.output, ex.stderr)
-
-    def __str__(self) -> str:
-        lines = [super().__str__()]
-        if self.stdout is not None:
-            lines.extend(["stdout:", self.stdout])
-        if self.stderr is not None:
-            lines.extend(["stderr:", self.stderr])
-        return "\n".join(lines)
-
-
 def logger() -> logging.Logger:
     """Returns the logger for this module."""
     return logging.getLogger(__name__)
@@ -93,8 +77,8 @@ def verbose_subprocess_errors() -> Iterator[None]:
     try:
         yield
     except subprocess.CalledProcessError as ex:
-        # TODO: Replace with `.add_note()` once we're on Python 3.11+.
-        # The tests will need to be slightly adjusted once we make that change since the
-        # trace will report the exception as `subprocess.CalledProcessError` instead of
-        # our custom type, but that's what we want anyway.
-        raise VerboseCalledProcessError.from_calledprocesserror(ex) from ex
+        if ex.stdout is not None:
+            ex.add_note(f"stdout:\n{ex.stdout}")
+        if ex.stderr is not None:
+            ex.add_note(f"stderr:\n{ex.stderr}")
+        raise
