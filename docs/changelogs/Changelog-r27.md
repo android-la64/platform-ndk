@@ -63,6 +63,8 @@ directly, see the [build system maintainers guide].
   the Android Gradle Plugin) to build your code to be compatible with devices
   that use a 16KiB page size. Third-party build system users and maintainers
   should consult the [build system maintainers guide].
+* Symlinks are now properly preserved in the macOS App Bundle. The NDK installed
+  via that method is now the same size as the one installed via the SDK manager.
 
 [Issue 1728]: https://github.com/android/ndk/issues/1728
 [Issue 1853]: https://github.com/android/ndk/issues/1853
