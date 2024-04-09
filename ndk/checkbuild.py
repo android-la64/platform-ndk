@@ -212,7 +212,7 @@ def make_app_bundle(
     create_stub_entry_point(contents_dir / "MacOS" / entry_point_name)
 
     bundled_ndk = contents_dir / "NDK"
-    shutil.copytree(ndk_dir, bundled_ndk)
+    shutil.copytree(ndk_dir, bundled_ndk, symlinks=True)
 
     plist = contents_dir / "Info.plist"
     create_plist(plist, get_version_string(build_number), entry_point_name)
