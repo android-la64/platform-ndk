@@ -65,6 +65,8 @@ directly, see the [build system maintainers guide].
   should consult the [build system maintainers guide].
 * Symlinks are now properly preserved in the macOS App Bundle. The NDK installed
   via that method is now the same size as the one installed via the SDK manager.
+* The unsupported libclang, libclang-cpp, libLLVM, and libLTO libraries were
+  removed to save space.
 
 [Issue 1728]: https://github.com/android/ndk/issues/1728
 [Issue 1853]: https://github.com/android/ndk/issues/1853
