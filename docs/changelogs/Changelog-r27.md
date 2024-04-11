@@ -36,6 +36,8 @@ directly, see the [build system maintainers guide].
   * [Issue 1947]: Fixed various function multi-versioning crashes.
   * [Issue 1963]: Fixed undefined behavior in `std::unexpected::has_value()`.
   * [Issue 1988]: Added aarch64 support for `preserve_all` calling convention.
+  * [Issue 2007]: Fixed crash in class template argument deduction caused by
+    self-referential friend declaration.
 * A RISC-V sysroot (AKA riscv64, or rv64) has been added. It is **not**
   supported. It is present to aid bringup for OS vendors, but it's not yet a
   supported Android ABI. It will not be built by default.
@@ -79,3 +81,4 @@ directly, see the [build system maintainers guide].
 [Issue 1988]: https://github.com/android/ndk/issues/1988
 [Issue 1993]: https://github.com/android/ndk/issues/1993
 [Issue 1994]: https://github.com/android/ndk/issues/1994
+[Issue 2007]: https://github.com/android/ndk/issues/2007
