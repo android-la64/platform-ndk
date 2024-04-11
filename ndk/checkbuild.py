@@ -577,14 +577,22 @@ class Clang(ndk.builds.Module):
                 continue
             if file.name == "lldb-server":
                 subprocess.check_call([str(strip_cmd), str(file)])
-            if (
-                file.name.startswith("libLLVM.")
-                or file.name.startswith("libclang.")
-                or file.name.startswith("libclang-cpp.")
-                or file.name.startswith("libLTO.")
-                or file.name.startswith("liblldb.")
-            ):
+            if file.name.startswith("libLTO.") or file.name.startswith("liblldb."):
                 subprocess.check_call([str(strip_cmd), "--strip-unneeded", str(file)])
+
+        # These exist for plugin support and library use, but neither of those
+        # are supported workflows for the NDK, so they're just dead weight.
+        #
+        # They don't exist on Windows though.
+        if self.host is not Host.Windows64:
+            lib_ext = ".dylib" if self.host is Host.Darwin else ".so"
+            (install_path / "lib" / "libclang").with_suffix(lib_ext).unlink()
+            (install_path / "lib" / "libclang-cpp").with_suffix(lib_ext).unlink()
+            (install_path / "lib" / "libLLVM").with_suffix(lib_ext).unlink()
+            (install_path / "lib" / "libLTO").with_suffix(lib_ext).unlink()
+            if self.host is Host.Linux:
+                for library in (install_path / "lib").glob("libLLVM-*"):
+                    library.unlink()
 
         for lib in (install_path / "lib").iterdir():
             broken_symlinks = {
