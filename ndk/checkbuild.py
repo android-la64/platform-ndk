@@ -1935,14 +1935,25 @@ class SourceProperties(ndk.builds.Module):
         # manager UI in Android Studio will use as the display name and categorization,
         # so the formats of those should not change.
         #
+        # Pkg.Path determines the install location within the SDK directory when
+        # installed by the SDK manager. ndk;1.2.3 will install to
+        # $SDK/ndk/1.2.3. AGP expects the NDK to be installed to
+        # ndk/$MAJOR.$HOTFIX.$BUILD, so we cannot improve on the name of this
+        # directory by, say, using the correct name or indicating beta/RC
+        # status.
+        #
         # The rest is up to us. We can add new fields that can be used in the release
         # configs. Pkg.ReleaseName, for example, is used to populate that portion of the
         # name of the zip file produced by the release.
+        version_number = (
+            f"{ndk.config.major}.{ndk.config.hotfix}.{self.context.build_number}"
+        )
         path.write_text(
             textwrap.dedent(
                 f"""\
                 Pkg.Desc = Android NDK
                 Pkg.Revision = {version}
+                Pkg.Path = ndk;{version_number}
                 Pkg.ReleaseName = {ndk.config.release}
                 """
             )
