@@ -1935,12 +1935,14 @@ class SourceProperties(ndk.builds.Module):
         # manager UI in Android Studio will use as the display name and categorization,
         # so the formats of those should not change.
         #
-        # Pkg.Path determines the install location within the SDK directory when
-        # installed by the SDK manager. ndk;1.2.3 will install to
-        # $SDK/ndk/1.2.3. AGP expects the NDK to be installed to
-        # ndk/$MAJOR.$HOTFIX.$BUILD, so we cannot improve on the name of this
-        # directory by, say, using the correct name or indicating beta/RC
-        # status.
+        # Pkg.BaseRevision determines the install location within the SDK
+        # directory when installed by the SDK manager, and the name that shows
+        # up in the "Name" column (the format of which has an impact on how
+        # Studio groups packages, as there is no explicit grouping). This must
+        # be $MAJOR.$HOTFIX.$BUILD with no beta, RC, or canary information, or
+        # else the SDK manager will install it to a location other than what AGP
+        # expects, and the SDK manager will not group it correctly in the
+        # details panel.
         #
         # The rest is up to us. We can add new fields that can be used in the release
         # configs. Pkg.ReleaseName, for example, is used to populate that portion of the
@@ -1953,7 +1955,7 @@ class SourceProperties(ndk.builds.Module):
                 f"""\
                 Pkg.Desc = Android NDK
                 Pkg.Revision = {version}
-                Pkg.Path = ndk;{version_number}
+                Pkg.BaseRevision = {version_number}
                 Pkg.ReleaseName = {ndk.config.release}
                 """
             )
