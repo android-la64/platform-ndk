@@ -61,8 +61,8 @@ def verify_load_section_alignment(
         if alignment != expected_alignment:
             return (
                 False,
-                f"{path.resolve()}: LOAD section at {offset:x} has incorrect alignment {alignment:x}. "
-                f"Expected {expected_alignment:x}",
+                f"{path.resolve()}: LOAD section at {offset:#x} has incorrect "
+                f"alignment {alignment:#x}. Expected {expected_alignment:#x}",
             )
     return True, None
 
@@ -95,8 +95,14 @@ def run_test(ndk_path: str, config: BuildConfiguration) -> tuple[bool, str | Non
         ndk_build_builder.build()
     except CalledProcessError as ex:
         return False, f"Build failed:\n{ex.stdout}"
+
+    if config.abi in (Abi("arm64-v8a"), Abi("x86_64")):
+        expected_alignment = 16 * 1024
+    else:
+        expected_alignment = 4 * 1024
+
     return verify_load_section_alignment_each_file(
         [cmake_builder.out_dir / "libfoo.so", ndk_build_builder.out_dir / "libfoo.so"],
         Path(ndk_path),
-        expected_alignment=16 * 1024 if config.abi == Abi("arm64-v8a") else 4 * 1024,
+        expected_alignment,
     )
