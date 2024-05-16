@@ -134,7 +134,7 @@ LOCAL_CFLAGS := -DANDROID $(LOCAL_CFLAGS)
 
 ifeq ($(APP_SUPPORT_FLEXIBLE_PAGE_SIZES),true)
   LOCAL_CFLAGS += -D__BIONIC_NO_PAGE_SIZE_MACRO
-  ifeq ($(APP_ABI),arm64-v8a)
+  ifneq (,$(filter $(APP_ABI),arm64-v8a x86_64))
     LOCAL_LDFLAGS += -Wl,-z,max-page-size=16384
   endif
 endif
