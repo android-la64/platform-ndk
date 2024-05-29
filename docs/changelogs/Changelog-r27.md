@@ -33,7 +33,7 @@ directly, see the [build system maintainers guide].
   directory for version information.
   * [Issue 1728]: Clang now emits an error for invalid Android target versions.
   * [Issue 1853]: `clang-scan-deps` is now included.
-  * [Issue 1947]: Fixed various function multi-versioning crashes.
+  * [Issue 1947]: Improved support for AArch64 function multi-versioning in clang.
   * [Issue 1963]: Fixed undefined behavior in `std::unexpected::has_value()`.
   * [Issue 1988]: Added aarch64 support for `preserve_all` calling convention.
   * [Issue 2007]: Fixed crash in class template argument deduction caused by
