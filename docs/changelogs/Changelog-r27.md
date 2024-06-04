@@ -38,6 +38,10 @@ directly, see the [build system maintainers guide].
   * [Issue 1988]: Added aarch64 support for `preserve_all` calling convention.
   * [Issue 2007]: Fixed crash in class template argument deduction caused by
     self-referential friend declaration.
+  * [Issue 2010]: Removed superfluous libraries to reduce disk use.
+  * [Issue 2012]: Fixed front end crash when using concepts and modules.
+  * [Issue 2013]: Fixed false positive ODR violation in global module fragments.
+  * [Issue 2024]: Removed invalid `__attribute__((__const__))` from `gettid`.
 * A RISC-V sysroot (AKA riscv64, or rv64) has been added. It is **not**
   supported. It is present to aid bringup for OS vendors, but it's not yet a
   supported Android ABI. It will not be built by default.
@@ -82,3 +86,7 @@ directly, see the [build system maintainers guide].
 [Issue 1993]: https://github.com/android/ndk/issues/1993
 [Issue 1994]: https://github.com/android/ndk/issues/1994
 [Issue 2007]: https://github.com/android/ndk/issues/2007
+[Issue 2010]: https://github.com/android/ndk/issues/2010
+[Issue 2012]: https://github.com/android/ndk/issues/2012
+[Issue 2013]: https://github.com/android/ndk/issues/2013
+[Issue 2024]: https://github.com/android/ndk/issues/2024
