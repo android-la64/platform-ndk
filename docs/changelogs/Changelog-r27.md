@@ -13,12 +13,12 @@ directly, see the [build system maintainers guide].
 
 ## Announcements
 
-* Android V will allow OEMs to ship arm64-v8a and x86_64 devices with 16KiB page
-  sizes. Devices that use this configuration will not be able to run existing
-  apps that use native code. To be compatible with these devices, applications
-  will need to rebuild all their native code to be 16KiB aligned, and rewrite
-  any code which assumes a specific page size. ndk-build and CMake have options
-  to enable this mode (see note about `APP_SUPPORT_FLEXIBLE_PAGE_SIZES` and
+* Android V will allow OEMs to ship arm64-v8a devices with 16KiB page sizes.
+  Devices that use this configuration will not be able to run existing apps that
+  use native code. To be compatible with these devices, applications will need
+  to rebuild all their native code to be 16KiB aligned, and rewrite any code
+  which assumes a specific page size. ndk-build and CMake have options to enable
+  this mode (see note about `APP_SUPPORT_FLEXIBLE_PAGE_SIZES` and
   `ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES` below). A future version of the NDK will
   enable this mode by default. If you're using or maintaining a third-party
   build system, consult the [build system maintainers guide] for instructions.
