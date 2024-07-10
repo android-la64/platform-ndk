@@ -33,6 +33,7 @@ directly, see the [build system maintainers guide].
   directory for version information.
   * [Issue 1728]: Clang now emits an error for invalid Android target versions.
   * [Issue 1853]: `clang-scan-deps` is now included.
+  * [Issue 1911]: Fixed inconsistent `std::regex_replace` results.
   * [Issue 1947]: Improved support for AArch64 function multi-versioning in clang.
   * [Issue 1963]: Fixed undefined behavior in `std::unexpected::has_value()`.
   * [Issue 1988]: Added aarch64 support for `preserve_all` calling convention.
@@ -41,6 +42,8 @@ directly, see the [build system maintainers guide].
   * [Issue 2010]: Removed superfluous libraries to reduce disk use.
   * [Issue 2012]: Fixed front end crash when using concepts and modules.
   * [Issue 2013]: Fixed false positive ODR violation in global module fragments.
+  * [Issue 2023]: Fixed Clang crashes related to lambda captures in unevaluated
+    contexts.
   * [Issue 2024]: Removed invalid `__attribute__((__const__))` from `gettid`.
 * A RISC-V sysroot (AKA riscv64, or rv64) has been added. It is **not**
   supported. It is present to aid bringup for OS vendors, but it's not yet a
@@ -78,6 +81,7 @@ directly, see the [build system maintainers guide].
 [Issue 1853]: https://github.com/android/ndk/issues/1853
 [Issue 1856]: https://github.com/android/ndk/issues/1856
 [Issue 1898]: https://github.com/android/ndk/issues/1898
+[Issue 1911]: https://github.com/android/ndk/issues/1911
 [Issue 1921]: https://github.com/android/ndk/issues/1921
 [Issue 1947]: https://github.com/android/ndk/issues/1947
 [Issue 1963]: https://github.com/android/ndk/issues/1963
@@ -89,4 +93,5 @@ directly, see the [build system maintainers guide].
 [Issue 2010]: https://github.com/android/ndk/issues/2010
 [Issue 2012]: https://github.com/android/ndk/issues/2012
 [Issue 2013]: https://github.com/android/ndk/issues/2013
+[Issue 2023]: https://github.com/android/ndk/issues/2023
 [Issue 2024]: https://github.com/android/ndk/issues/2024
