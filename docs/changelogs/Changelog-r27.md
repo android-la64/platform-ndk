@@ -13,12 +13,12 @@ directly, see the [build system maintainers guide].
 
 ## Announcements
 
-* Android V will allow OEMs to ship arm64-v8a and x86_64 devices with 16KiB page
-  sizes. Devices that use this configuration will not be able to run existing
-  apps that use native code. To be compatible with these devices, applications
-  will need to rebuild all their native code to be 16KiB aligned, and rewrite
-  any code which assumes a specific page size. ndk-build and CMake have options
-  to enable this mode (see note about `APP_SUPPORT_FLEXIBLE_PAGE_SIZES` and
+* Android V will allow OEMs to ship arm64-v8a devices with 16KiB page sizes.
+  Devices that use this configuration will not be able to run existing apps that
+  use native code. To be compatible with these devices, applications will need
+  to rebuild all their native code to be 16KiB aligned, and rewrite any code
+  which assumes a specific page size. ndk-build and CMake have options to enable
+  this mode (see note about `APP_SUPPORT_FLEXIBLE_PAGE_SIZES` and
   `ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES` below). A future version of the NDK will
   enable this mode by default. If you're using or maintaining a third-party
   build system, consult the [build system maintainers guide] for instructions.
@@ -33,9 +33,18 @@ directly, see the [build system maintainers guide].
   directory for version information.
   * [Issue 1728]: Clang now emits an error for invalid Android target versions.
   * [Issue 1853]: `clang-scan-deps` is now included.
-  * [Issue 1947]: Fixed various function multi-versioning crashes.
+  * [Issue 1911]: Fixed inconsistent `std::regex_replace` results.
+  * [Issue 1947]: Improved support for AArch64 function multi-versioning in clang.
   * [Issue 1963]: Fixed undefined behavior in `std::unexpected::has_value()`.
   * [Issue 1988]: Added aarch64 support for `preserve_all` calling convention.
+  * [Issue 2007]: Fixed crash in class template argument deduction caused by
+    self-referential friend declaration.
+  * [Issue 2010]: Removed superfluous libraries to reduce disk use.
+  * [Issue 2012]: Fixed front end crash when using concepts and modules.
+  * [Issue 2013]: Fixed false positive ODR violation in global module fragments.
+  * [Issue 2023]: Fixed Clang crashes related to lambda captures in unevaluated
+    contexts.
+  * [Issue 2024]: Removed invalid `__attribute__((__const__))` from `gettid`.
 * A RISC-V sysroot (AKA riscv64, or rv64) has been added. It is **not**
   supported. It is present to aid bringup for OS vendors, but it's not yet a
   supported Android ABI. It will not be built by default.
@@ -72,6 +81,7 @@ directly, see the [build system maintainers guide].
 [Issue 1853]: https://github.com/android/ndk/issues/1853
 [Issue 1856]: https://github.com/android/ndk/issues/1856
 [Issue 1898]: https://github.com/android/ndk/issues/1898
+[Issue 1911]: https://github.com/android/ndk/issues/1911
 [Issue 1921]: https://github.com/android/ndk/issues/1921
 [Issue 1947]: https://github.com/android/ndk/issues/1947
 [Issue 1963]: https://github.com/android/ndk/issues/1963
@@ -79,3 +89,9 @@ directly, see the [build system maintainers guide].
 [Issue 1988]: https://github.com/android/ndk/issues/1988
 [Issue 1993]: https://github.com/android/ndk/issues/1993
 [Issue 1994]: https://github.com/android/ndk/issues/1994
+[Issue 2007]: https://github.com/android/ndk/issues/2007
+[Issue 2010]: https://github.com/android/ndk/issues/2010
+[Issue 2012]: https://github.com/android/ndk/issues/2012
+[Issue 2013]: https://github.com/android/ndk/issues/2013
+[Issue 2023]: https://github.com/android/ndk/issues/2023
+[Issue 2024]: https://github.com/android/ndk/issues/2024
