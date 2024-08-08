@@ -29,6 +29,9 @@ directly, see the [build system maintainers guide].
 
 ## r27b
 
+* [Issue 2032]: Fixed compatibility issues with projects that used a very old
+  `cmake_minimum_required` version ("Policy CMP0057 is not set: Support new
+  IN_LIST if() operator").
 * [Issue 2039]: Fixed `LOCAL_STRIP_MODE` not being reset by
   `include $(CLEAR_VARS)`.
 * [Issue 2049]: Restored metadata used by CMake in non-toolchain-file use cases
@@ -37,6 +40,7 @@ directly, see the [build system maintainers guide].
   because that's what [CMake's docs] say to use. Better still, use the NDK's
   [toolchain file].
 
+[Issue 2032]: https://github.com/android/ndk/issues/2032
 [Issue 2039]: https://github.com/android/ndk/issues/2039
 [Issue 2049]: https://github.com/android/ndk/issues/2049
 [CMake's docs]: https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling-for-android-with-the-ndk
