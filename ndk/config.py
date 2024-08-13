@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 major = 27
-hotfix = 0
+hotfix = 1
 hotfix_str = chr(ord("a") + hotfix) if hotfix else ""
 beta = 0
 beta_str = "-beta{}".format(beta) if beta > 0 else ""
