@@ -1506,12 +1506,6 @@ def abis_meta_transform(metadata: dict[str, Any]) -> dict[str, Any]:
         abi_infos[f"NDK_ABI_{abi}_LLVM_TRIPLE"] = llvm_triple
         abi_infos[f"NDK_ABI_{abi}_MIN_OS_VERSION"] = int(abi_data["min_os_version"])
 
-        # These will appear to be unused because there is no reference to them anywhere
-        # in the code base, but they're used by CMake for non-toolchain-file users, so
-        # they must be preserved.
-        abi_infos[f"NDK_PROC_{proc}_ABI"] = abi
-        abi_infos[f"NDK_ARCH_{arch}_ABI"] = abi
-
     meta_vars = {
         "NDK_DEFAULT_ABIS": sorted(default_abis),
         "NDK_DEPRECATED_ABIS": sorted(deprecated_abis),
