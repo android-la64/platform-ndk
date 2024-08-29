@@ -31,8 +31,16 @@ directly, see the [build system maintainers guide].
 
 * [Issue 2039]: Fixed `LOCAL_STRIP_MODE` not being reset by
   `include $(CLEAR_VARS)`.
+* [Issue 2049]: Restored metadata used by CMake in non-toolchain-file use cases
+  that used `CMAKE_SYSTEM_PROCESSOR` instead of `CMAKE_ANDROID_ARCH_ABI`. If you
+  ran into this problem, you should switch to using `CMAKE_ANDROID_ARCH_ABI`
+  because that's what [CMake's docs] say to use. Better still, use the NDK's
+  [toolchain file].
 
 [Issue 2039]: https://github.com/android/ndk/issues/2039
+[Issue 2049]: https://github.com/android/ndk/issues/2049
+[CMake's docs]: https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling-for-android-with-the-ndk
+[toolchain file]: https://developer.android.com/ndk/guides/cmake
 
 ## Changes
 
