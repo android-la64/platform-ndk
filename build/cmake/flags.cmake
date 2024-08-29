@@ -15,6 +15,8 @@
 # This file will be included directly by cmake. It is used to provide
 # additional cflags / ldflags.
 
+cmake_minimum_required(VERSION 3.6.0)
+
 set(_ANDROID_NDK_INIT_CFLAGS)
 set(_ANDROID_NDK_INIT_CFLAGS_DEBUG)
 set(_ANDROID_NDK_INIT_CFLAGS_RELEASE)

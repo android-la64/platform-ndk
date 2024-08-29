@@ -27,6 +27,33 @@ directly, see the [build system maintainers guide].
 
 [Support 16 KB page sizes]: https://developer.android.com/guide/practices/page-sizes
 
+## r27b
+
+* Updated LLVM to clang-r522817b. See `clang_source_info.md` in the toolchain
+  directory for version information.
+  * [Issue 2040]: Fixed miscompile with indirect gotos.
+  * [Issue 2054]: Fixed crash in x86 fp16 instruction selection.
+  * [Issue 2059]: Fixed infinite loop in aarch64 vector instruction selection.
+* [Issue 2032]: Fixed compatibility issues with projects that used a very old
+  `cmake_minimum_required` version ("Policy CMP0057 is not set: Support new
+  IN_LIST if() operator").
+* [Issue 2039]: Fixed `LOCAL_STRIP_MODE` not being reset by
+  `include $(CLEAR_VARS)`.
+* [Issue 2049]: Restored metadata used by CMake in non-toolchain-file use cases
+  that used `CMAKE_SYSTEM_PROCESSOR` instead of `CMAKE_ANDROID_ARCH_ABI`. If you
+  ran into this problem, you should switch to using `CMAKE_ANDROID_ARCH_ABI`
+  because that's what [CMake's docs] say to use. Better still, use the NDK's
+  [toolchain file].
+
+[Issue 2032]: https://github.com/android/ndk/issues/2032
+[Issue 2039]: https://github.com/android/ndk/issues/2039
+[Issue 2040]: https://github.com/android/ndk/issues/2040
+[Issue 2049]: https://github.com/android/ndk/issues/2049
+[Issue 2054]: https://github.com/android/ndk/issues/2054
+[Issue 2059]: https://github.com/android/ndk/issues/2059
+[CMake's docs]: https://cmake.org/cmake/help/latest/manual/cmake-toolchains.7.html#cross-compiling-for-android-with-the-ndk
+[toolchain file]: https://developer.android.com/ndk/guides/cmake
+
 ## Changes
 
 * Updated LLVM to clang-r522817. See `clang_source_info.md` in the toolchain
