@@ -1178,6 +1178,7 @@ NDK_APP_VARS_OPTIONAL := \
 NDK_APP_VARS_OPTIONAL += \
     APP_WRAP_SH_armeabi-v7a \
     APP_WRAP_SH_arm64-v8a \
+    APP_WRAP_SH_loongarch64 \
     APP_WRAP_SH_riscv64 \
     APP_WRAP_SH_x86 \
     APP_WRAP_SH_x86_64 \

@@ -26,11 +26,11 @@ from ndk.testing.flag_verifier import FlagVerifier
 
 def run_test(ndk_path: str, config: BuildConfiguration) -> tuple[bool, Optional[str]]:
     """Checks correct --no-rosegment use."""
-    # The 'riscv64' ABI has a minimum supported version of 35, so the below
+    # The 'riscv64/loongarch64' ABI has a minimum supported version of 35, so the below
     # tests of API level 29 and 30 are ignored (the CMake files will simply
     # reset the value to the minimum supported version). Verify that the
     # behavior after API level 30 is retained (--no-rosegment does not appear).
-    if config.abi == "riscv64":
+    if config.abi in ("riscv64", "loongarch64"):
         verifier = FlagVerifier(Path("project"), Path(ndk_path), config).with_api(35)
         verifier.expect_not_flag("-Wl,--no-rosegment")
         return verifier.verify().make_test_result_tuple()

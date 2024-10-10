@@ -17,6 +17,15 @@
     "triple": "aarch64-linux-android",
     "llvm_triple": "aarch64-none-linux-android"
   },
+  "loongarch64": {
+    "bitness": 64,
+    "default": false,
+    "deprecated": false,
+    "proc": "loongarch64",
+    "arch": "loongarch64",
+    "triple": "loongarch64-linux-android",
+    "llvm_triple": "loongarch64-none-linux-android"
+  },
   "riscv64": {
     "bitness": 64,
     "default": false,

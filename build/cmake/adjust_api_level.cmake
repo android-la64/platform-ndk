@@ -12,6 +12,15 @@ function(adjust_api_level api_level result_name)
     set(api_level "android-${NDK_MIN_PLATFORM_LEVEL}")
   endif()
 
+  # adjust api_level to 35 for loongarch64
+  if(ANDROID_ABI STREQUAL "loongarch64" AND result LESS 35)
+    message(STATUS
+      "android-${result} is not supported for ${ANDROID_ABI}. Using minimum "
+      "supported loongarch64 version 35.")
+    set(api_level android-35)
+    set(result 35)
+  endif()
+
   if(api_level STREQUAL "latest")
     message(STATUS
       "Using latest available ANDROID_PLATFORM: ${NDK_MAX_PLATFORM_LEVEL}.")

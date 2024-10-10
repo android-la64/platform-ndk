@@ -524,6 +524,7 @@ class Clang(ndk.builds.Module):
                 subdir = {
                     ndk.abis.Arch("arm"): "arm",
                     ndk.abis.Arch("arm64"): "aarch64",
+                    ndk.abis.Arch("loongarch64"): "loongarch64",
                     ndk.abis.Arch("riscv64"): "riscv64",
                     ndk.abis.Arch("x86"): "i386",
                     ndk.abis.Arch("x86_64"): "x86_64",
@@ -1302,6 +1303,7 @@ class Toolchain(ndk.builds.Module):
         libcxx_arch_name = {
             Abi("armeabi-v7a"): "arm",
             Abi("arm64-v8a"): "aarch64",
+            Abi("loongarch64"): "loongarch64",
             Abi("riscv64"): "riscv64",
             Abi("x86"): "i386",
             Abi("x86_64"): "x86_64",
