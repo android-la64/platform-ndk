@@ -98,8 +98,7 @@ class Module:
 
     # Not all components need a notice (stub scripts, basic things like the
     # readme and changelog, etc), but this is opt-out.
-    # no_notice = False
-    no_notice = True
+    no_notice = False
 
     # Indicates which NOTICE file that should contain the license text for this
     # module. i.e. NoticeGroup.BASE will result in the license being included
