@@ -62,6 +62,7 @@ def get_triple(arch):
     return {
         "arm": "arm-linux-androideabi",
         "arm64": "aarch64-linux-android",
+        "loongarch64": "loongarch64-linux-android",
         "riscv64": "riscv64-linux-android",
         "x86": "i686-linux-android",
         "x86_64": "x86_64-linux-android",
@@ -73,6 +74,7 @@ def arch_to_abi(arch: str) -> str:
     return {
         "arm": "armeabi-v7a",
         "arm64": "arm64-v8a",
+        "loongarch64": "loongarch64",
         "riscv64": "riscv64",
         "x86": "x86",
         "x86_64": "x86_64",
@@ -347,7 +349,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--arch", required=True, choices=("arm", "arm64", "riscv64", "x86", "x86_64")
+        "--arch", required=True, choices=("arm", "arm64", "loongarch64", "riscv64", "x86", "x86_64")
     )
     parser.add_argument(
         "--api", type=int, help='Target the given API version (example: "--api 24").'
