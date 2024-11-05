@@ -98,6 +98,8 @@ def run_test(ndk_path: str, config: BuildConfiguration) -> tuple[bool, str | Non
 
     if config.abi in (Abi("arm64-v8a"), Abi("x86_64")):
         expected_alignment = 16 * 1024
+    elif config.abi in (Abi("loongarch64"),):
+        expected_alignment = 64 * 1024
     else:
         expected_alignment = 4 * 1024
 

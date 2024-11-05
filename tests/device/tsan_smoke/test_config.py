@@ -5,7 +5,7 @@ from ndk.test.devicetest.case import TestCase
 def build_unsupported(test):
     # TODO(https://github.com/google/android-riscv64/issues/104): Add TSAN when it
     # builds for RISCV64.
-    if test.config.is_lp32 or test.config.abi == "riscv64":
+    if test.config.is_lp32 or test.config.abi == "riscv64" or test.config.abi == "loongarch64":
         return test.config.abi
     return None
 
